@@ -104,20 +104,26 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
 
     page_cnt = 0
 
+    start_timer = time.perf_counter()
     while next_token is not None:
-        start_timer = time.perf_counter()
 
-        json_response = helper.connect_to_endpoint(endpoint, headers, query_params)
-        is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
-        next_token = json_response['meta'].get('next_token', None)
-        tweet_count = json_response['meta']['total_tweet_count']
-        tweet_count_total += tweet_count
-        page_cnt += 1
-        query_params['next_token'] = next_token
+        try:
 
-        if page_cnt % 20 == 0:
-            print(f"    current tweet count: {tweet_count_total}")
+            json_response = helper.connect_to_endpoint(endpoint, headers, query_params)
+            is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
+            next_token = json_response['meta'].get('next_token', None)
+            query_params['next_token'] = next_token
+            tweet_count = json_response['meta']['total_tweet_count']
+            tweet_count_total += tweet_count
+            page_cnt += 1
 
+
+            if page_cnt % 20 == 0:
+                print(f"    current tweet count: {tweet_count_total}")
+        except Exception as e:
+
+            logger.error("Error in get_tweet_count():", exc_info=True)
+            print("json_response:", json_response)
     #         print(f"next_token: {next_token}. total_tweet_count: {tweet_count_total}")
 
     return tweet_count_total  # , json_response
@@ -135,7 +141,8 @@ def execute_download(saved_path=os.getcwd(),
     # query = f"({keyword})"
     start_time = "2019-01-01T00:00:00Z"
     # end_time   = "2019-12-31T23:59:59Z"
-    end_time = "2021-12-01T00:00:00.000Z"
+    end_time   = "2021-12-01T00:00:00.000Z"
+    # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
     # until_id = '1139156316075757568'
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
@@ -210,6 +217,9 @@ def execute_download(saved_path=os.getcwd(),
     while next_token != "":
         try:
             json_response = helper.connect_to_endpoint(search_url, headers, query_params)
+            next_token = json_response['meta'].get('next_token', "")
+            query_params.update({"next_token": next_token})
+
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
             #             df = pd.DataFrame(json_response['data'])
 
@@ -227,18 +237,13 @@ def execute_download(saved_path=os.getcwd(),
             total += int(json_response['meta']['result_count'])
             logger.info("Downloaded %s tweets in total." % total)
 
-            next_token = json_response['meta'].get('next_token', "")
-
-
-            query_params.update({"next_token": next_token})
 
             tweet_count_total += max_results
 
             if len(merged_df_list) >= merge_file_count or next_token == "":
 
+                logger.info("Merging a tweets chuck...")
                 df_all = pd.concat(merged_df_list)
-
-
 
                 lastest_time = df_all['created_at'].max().replace(":", "_")
                 oldest_time  = df_all['created_at'].min().replace(":", "_")
@@ -251,11 +256,17 @@ def execute_download(saved_path=os.getcwd(),
 
                 df_all.to_csv(new_name, index=False)
 
+                logger.info("Finished merging a tweets chuck at: %s" % new_name)
+
+                logger.info("Converting a tweet chunck to cluster format...")
+
                 df_all_cluster = helper.convert_to_cluster(df_all)
                 new_name = os.path.join(cluster_csvs_dir, base_name + f"{suffix}")
                 df_all_cluster.to_csv(new_name, index=False)
 
                 merged_df_list = []
+
+                logger.info("Finished converting a tweets chuck to cluster format: %s" % new_name)
 
             if next_token == "":
                 print("No next page! Exit.")
@@ -264,26 +275,13 @@ def execute_download(saved_path=os.getcwd(),
         except Exception as e:
             print(json_response)
             logger.error(e, exc_info=True)
-
             print(e)
-
             now = time.perf_counter()
-
-            time_window = 15 * 60  # seconds
-
-            # if 'Too Many Requests' in json_response['detail']:
-            #
-            #
-            #     print(f'Too Many Requests, waiting for {need_to_wait_time} seconds.')
-            #
-            # else:
-            #
-            #     print(f"json_response['detail']:", json_response['detail'])
+            time_window = 1 * 60  # seconds
             elapsed_time = int(now - start_timer)
             need_to_wait_time = time_window - elapsed_time
-            print(f'Waiting for {need_to_wait_time} seconds.')
-            time.sleep(need_to_wait_time)
-
+            print(f'Waiting for {time_window} seconds.')
+            time.sleep(time_window)
 
             continue
 

@@ -25,7 +25,10 @@ def set_logger(log_file_path="debug.log", level="INFO"):
     logger = logging.getLogger()
     logger.setLevel(level)
     scream_handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    scream_handler.setFormatter(formatter)
     file_handler = logging.FileHandler(log_file_path)
+    file_handler.setFormatter(formatter)
     logger.addHandler(scream_handler)
     logger.addHandler(file_handler)
     return logger
@@ -120,6 +123,10 @@ def find_poll_id(row):
 def refine_data(df):
     df['place_id'] = df.apply(find_place_id, axis=1)
     df['text'] = df.apply(clean_tweets, axis=1)
+
+    if 'attachments' not in df.columns:
+        df['attachments'] = ''
+        logger.warning("Found no attachments column in the returned tweets.")
 
     return df
 
@@ -228,6 +235,10 @@ def merge_a_response(data_file_name, save_path=""):
         if os.path.exists(tweets_csv):
             df_tweets = pd.read_csv(tweets_csv).fillna("")
             df_tweets["text"] = df_tweets["text"].str.replace("\n", " ")
+            if 'in_reply_to_user_id' not in df_tweets.columns:
+                df_tweets['in_reply_to_user_id'] = ''
+                logger.warning("Found no in_reply_to_user_id column in the returned includes_tweets.")
+
             new_column_name = {name: "tweets_table_" + name for name in df_tweets.columns}
             df_tweets = df_tweets.rename(columns=new_column_name)
             df_merged = pd.merge(df_merged, df_tweets, how='left', left_on="id", right_on="tweets_table_id")
@@ -690,8 +701,8 @@ def convert_to_cluster(df):
     new_df['postdate'] = df['created_at']
     new_df['message'] = df['text']
     new_df['geoType'] = df.apply(get_geoType, axis=1)
-    new_df['longitude'] = df['lon']
-    new_df['latitude'] = df['lat']
+    new_df['longitude'] = df.apply(get_longitude, axis=1)
+    new_df['latitude'] = df.apply(get_latitude, axis=1)
     new_df['place'] = df['places_table_name'].replace("\t", " ").replace("\r", ";").replace(",", ";").replace('\n', ';').str.strip()
 
     new_df['placeBboxwest'] = df.apply(get_placeBboxWest, axis=1)
