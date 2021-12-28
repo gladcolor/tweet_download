@@ -23,7 +23,7 @@ There are four folders to store download tweets:
  
  # How to use
 * Prerequisite:
-   - [Develop account](https://developer.twitter.com/en/products/twitter-api/academic-research). Put your keys in `API_Keys/tweet_api_keys.txt`.
+   - [Develop account](https://developer.twitter.com/en/products/twitter-api/academic-research). Put your keys in `tweet_api_keys.txt` (put this file in the same folder as the `download_tweet_APIv2.py`).
     ```
     Consumer API Key: copy_your_key_here
     Consumer API Secret Key: copy_your_key_here
