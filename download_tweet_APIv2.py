@@ -9,20 +9,15 @@ import json
 import pandas as pd
 import time
 import math
-
 import emoji
 
-
 import pandas as pd
-
 
 import helper
 
 
 logger = helper.logger
-
 json_response_list = [] # a global variable to store the returned tweet. Will be emptied periodically
-
 
 def save_search(json_response,
                 saved_path,
@@ -50,7 +45,6 @@ def save_search(json_response,
         df = df.sort_index(axis=1)
 
         # basename = f"{meta['oldest_id']}_{meta['newest_id']}_{meta['result_count']}"  # use tweet_id as basename
-
         lastest_time =  df.iloc[0]['created_at'].replace(":", "_")
         oldest_time =  df.iloc[-1]['created_at'].replace(":", "_")
         basename = f"{oldest_time}_{lastest_time}_{meta['result_count']}"  # use tweet time as basename
@@ -71,12 +65,10 @@ def save_search(json_response,
 
             df.to_csv(includes_filename, index=False)
 
-    #         return df
         return data_filename
 
     except Exception as e:
         logger.error(e, exc_info=True)
-
 
 
 def get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None):
@@ -133,9 +125,10 @@ def execute_download(saved_path=os.getcwd(),
     # end_time   = "2019-12-31T23:59:59Z"
     end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
-
     # until_id = '1139156316075757568'
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
+    chunk_size = 500000  # tweets
+    tweet_count_total = 0
 
     # since_id = "139819805172285849"  # cannot used with start/end_time!
 
@@ -154,11 +147,6 @@ def execute_download(saved_path=os.getcwd(),
     os.makedirs(chunks_dir, exist_ok=True)
     os.makedirs(cluster_csvs_dir, exist_ok=True)
 
-    max_results = 500
-
-    chunk_size = 500000  # tweets
-
-    tweet_count_total = 0
 
     has_context_annotations = False
 
@@ -171,14 +159,12 @@ def execute_download(saved_path=os.getcwd(),
     query_params = {'query': query, \
                     "max_results": str(max_results), \
                     'expansions': 'attachments.poll_ids,attachments.media_keys,author_id,entities.mentions.username,geo.place_id,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id', \
-                    # 'expansions': 'attachments.poll_ids,attachments.media_keys,author_id,entities.mentions.username,geo.place_id,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id,owner_id,creator_id,host_ids,invited_user_ids,speaker_ids', \
  \
                     # HAVE context_annotations, max_results can be only 100
                     #'tweet.fields': 'attachments,author_id,context_annotations,conversation_id,created_at,entities,geo,id,in_reply_to_user_id,lang,public_metrics,possibly_sensitive,referenced_tweets,reply_settings,source,text,withheld', \
 
                     # NO context_annotations,  max_results can be 500
                     'tweet.fields': 'attachments,author_id,conversation_id,created_at,entities,geo,id,in_reply_to_user_id,lang,public_metrics,possibly_sensitive,referenced_tweets,reply_settings,source,text,withheld', \
- \
                     'place.fields': 'contained_within,country,country_code,full_name,geo,id,name,place_type', \
                     "user.fields": 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld', \
                     "media.fields": "duration_ms,height,media_key,preview_image_url,type,url,width,public_metrics", \
@@ -211,7 +197,6 @@ def execute_download(saved_path=os.getcwd(),
             query_params.update({"next_token": next_token})
 
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
-            #             df = pd.DataFrame(json_response['data'])
 
             if isinstance(json_response, dict): # if have returned tweet
                 json_response_list.append(json_response)
@@ -226,7 +211,6 @@ def execute_download(saved_path=os.getcwd(),
 
             total += int(json_response['meta']['result_count'])
             logger.info("Downloaded %s tweets in total." % total)
-
 
             tweet_count_total += max_results
 
@@ -277,9 +261,7 @@ def execute_download(saved_path=os.getcwd(),
 
 
 
-
 token_path = r'API_Keys/tweet_api_keys.txt'
-
 
 tokens = helper.get_api_token(token_path)
 
@@ -288,7 +270,6 @@ consumer_secret = tokens[1]
 bearer_token = tokens[2]
 access_token = tokens[3]
 access_token_secret = tokens[4]
-
 
 
 if __name__ == '__main__':
