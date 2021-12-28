@@ -275,9 +275,8 @@ access_token_secret = tokens[4]
 if __name__ == '__main__':
 
     # token_path = r'K:\Research\tweet_downloading\python_code\tweet_api_keys.txt'
-    #
+
     # tokens = helper.get_api_token(token_path)
-    #
     # consumer_key = tokens[0]
     # consumer_secret = tokens[1]
     # bearer_token = tokens[2]
