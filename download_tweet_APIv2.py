@@ -288,7 +288,8 @@ def execute_download(saved_path=os.getcwd(),
 
 
 
-token_path = r'K:\Research\tweet_downloading\python_code\tweet_api_keys.txt'
+token_path = r'API_Keys/tweet_api_keys.txt'
+
 
 tokens = helper.get_api_token(token_path)
 
