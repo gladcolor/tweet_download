@@ -1,1 +1,6 @@
+Consumer API Key: DrGaVman2siXhxzLLnxFrDvWH
+Consumer API Secret Key: RLeustApjouXHTlWSvlcLce7J6kdeqXcEahdwq8J7nZSUfSGjo
+Bearer Token: AAAAAAAAAAAAAAAAAAAAABnYQAEAAAAASVwOsNlxP3cs96augGEvhyTpfBY%3DNC5GsXBJ7xjJ9jn8MjiUHk9Nss39HKXouWGucvKNjFxyGhdbEH
+Access Token: 1136457619307147274-06HQfhYltLJr8vsEa01c6Bq7GCoMrr
+Access Token Secret: AVS87SRqgzrZPTKoVa3T6V3dg4UCbAIJdKhVksLenOiJe
 
