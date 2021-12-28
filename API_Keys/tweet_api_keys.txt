@@ -1,0 +1,5 @@
+Consumer API Key: copy_your_key_here
+Consumer API Secret Key: copy_your_key_here
+Bearer Token: copy_your_key_here
+Access Token: copy_your_key_here
+Access Token Secret: copy_your_key_here
