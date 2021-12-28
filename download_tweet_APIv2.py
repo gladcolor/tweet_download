@@ -24,10 +24,6 @@ logger = helper.logger
 json_response_list = [] # a global variable to store the returned tweet. Will be emptied periodically
 
 
-
-
-
-
 def save_search(json_response,
                 saved_path,
                 is_zipped=False,
@@ -42,8 +38,7 @@ def save_search(json_response,
             suffix = '.csv'
 
         raw_tweets_dir = os.path.join(saved_path, 'raw_tweets')
-        line_tweets_dir = os.path.join(saved_path, 'line_tweets')
-
+        # line_tweets_dir = os.path.join(saved_path, 'line_tweets')
         meta = json_response['meta']
         data = json_response['data']
         includes = json_response['includes']
@@ -86,9 +81,6 @@ def save_search(json_response,
 
 def get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None):
     print("Counting tweets, please wait...")
-
-
-
     tweet_count_total = 0
     endpoint = r'https://api.twitter.com/2/tweets/counts/all'
     query_params = {'query': query, \
@@ -108,7 +100,6 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
     while next_token is not None:
 
         try:
-
             json_response = helper.connect_to_endpoint(endpoint, headers, query_params)
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
             next_token = json_response['meta'].get('next_token', None)
@@ -116,7 +107,6 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
             tweet_count = json_response['meta']['total_tweet_count']
             tweet_count_total += tweet_count
             page_cnt += 1
-
 
             if page_cnt % 20 == 0:
                 print(f"    current tweet count: {tweet_count_total}")
