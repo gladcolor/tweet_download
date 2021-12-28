@@ -22,25 +22,31 @@ There are four folders to store download tweets:
 
  
  # How to use
- - Prerequisite:
-    1) [Develop account](https://developer.twitter.com/en/products/twitter-api/academic-research). Put your keys in `API_Keys/tweet_api_keys.txt`.
-```
-Consumer API Key: copy_your_key_here
-Consumer API Secret Key: copy_your_key_here
-Bearer Token: copy_your_key_here
-Access Token: copy_your_key_here
-Access Token Secret: copy_your_key_here
-```
+* Prerequisite:
+   - [Develop account](https://developer.twitter.com/en/products/twitter-api/academic-research). Put your keys in `API_Keys/tweet_api_keys.txt`.
+    ```
+    Consumer API Key: copy_your_key_here
+    Consumer API Secret Key: copy_your_key_here
+    Bearer Token: copy_your_key_here
+    Access Token: copy_your_key_here
+    Access Token Secret: copy_your_key_here
+    ```
+   - Pandas
 
- - Using `download_tweet_APIv2.py` to download tweets.
+* Using `download_tweet_APIv2.py` to download tweets.
  
- Edit the parameters in the fucntion of `execute_download`, such as `saved_path`, `query`, `start_time`, `end_time`, and `chunk_size`. 
+     Edit the parameters in the fucntion of `execute_download`, such as `saved_path`, `query`, `start_time`, `end_time`, and `chunk_size`. 
  
- To build a query, you need to read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md). Here is a example: 
+     To build a query, you need to read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md). Here is a example: 
  `vaccin OR vaccination OR vaccine OR vaccinate place_country:AU`: tweets in Australia contain words `vaccin`, `vaccination`, or `vaccinate`.
  
- # Other solutions
-  If you do not like this repository, [twarc](https://github.com/DocNow/twarc) is highly recommanded.
+  
+ # Rate limit
+   300 request per 15 minutes; 500 tweets per requets (or 100 tweet with `context_annotation`). So the highest speed is 600,000 tweets per hour. However, due to heavy converting computations, the current speed is about 200 request per 15 minutes, which is 400,000 tweets per hour. In my obersvation, the speed is 200,000 tweets per hour only.
+ 
+ # Other solutions 
+ 
+   If you do not like this repository, [twarc](https://github.com/DocNow/twarc) is highly recommanded.    
   
  # To do
  
