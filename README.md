@@ -1,6 +1,6 @@
 # tweet_download
 
-This program downloads tweets from Twitter APIs(v2) using an Academic development accounts. All returned information are stored.
+This program downloads tweets from Twitter APIs(v2) using Academic development accounts. All returned information are stored.
 
 There are four folders to store download tweets: 
 
