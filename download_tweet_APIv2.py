@@ -73,7 +73,8 @@ def save_search(json_response,
 
 
 def get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None):
-    print("Counting tweets, please wait...")
+    logger.info("Counting tweets, please wait...")
+
     tweet_count_total = 0
     endpoint = r'https://api.twitter.com/2/tweets/counts/all'
     query_params = {'query': query, \
@@ -102,7 +103,7 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
             page_cnt += 1
 
             if page_cnt % 20 == 0:
-                print(f"    current tweet count: {tweet_count_total}")
+                logger.info(f"    current tweet count: {tweet_count_total}")
         except Exception as e:
 
             logger.error("Error in get_tweet_count():", exc_info=True)
@@ -132,6 +133,15 @@ def merge_a_response_list(data_filename_list, merged_df_list, save_path):
     logger.info("PID %s merge_a_response_list() end!" % os.getpid())
     # return df_merged
 
+def convert_to_cluster_process(all_df, new_name):
+    logger.info("PID %s convert_to_cluster_process() start!" % os.getpid())
+    df = helper.convert_to_cluster(all_df)
+
+    df.to_csv(new_name, index=False)
+
+    logger.info("PID %s Finished converting a tweets chuck to cluster format: %s" % (os.getpid(), new_name))
+    logger.info("PID %s convert_to_cluster_process() end!" % os.getpid())
+
 
 def execute_download(
                     is_zipped=False,
@@ -144,12 +154,12 @@ def execute_download(
     query = "telemedicine  OR telehealth  OR telecare"
 
     start_time = "2019-01-01T00:00:00Z"
-    end_time   = "2020-01-13T00:59:59Z"
+    end_time   = "2019-01-13T00:59:59Z"
     # end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 100000  # tweets
+    chunk_size = 1000  # tweets
 
     # Set the save path
     saved_path = r"downloaded_tweets_test2"
@@ -255,7 +265,7 @@ def execute_download(
 
             tweet_count_total += max_results
 
-            if len(data_filename_list_mp) > 10:
+            if len(data_filename_list_mp) > 5:
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
                 merge_process.start()
@@ -279,10 +289,9 @@ def execute_download(
 
                 merged_df_list = []
                 for i in range(int(merge_file_count)):
-                    try:
+                    if len(merged_df_list_mp) > 0:
                         merged_df_list.append(merged_df_list_mp.pop(0))
-                    except:
-                        pass
+
                 df_all = pd.concat(merged_df_list)
 
                 # time.sleep(3) # wait for the merging process.
@@ -309,11 +318,16 @@ def execute_download(
 
                 logger.info("Converting a tweet chunk to cluster format...")
 
-                df_all_cluster = helper.convert_to_cluster(df_all)
+                # converted_df_list = mp.Manager().list()
                 new_name = os.path.join(cluster_csvs_dir, base_name + f"{suffix}")
-                df_all_cluster.to_csv(new_name, index=False)
+                convert_process = mp.Process(target=convert_to_cluster_process,
+                                           args=(df_all,  new_name))
+                convert_process.start()
+                # convert_process.join()
+                # df_all_cluster = converted_df_list[0]
 
-                logger.info("Finished converting a tweets chuck to cluster format: %s" % new_name)
+                # df_all_cluster = helper.convert_to_cluster(df_all)
+
 
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600 # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed )
