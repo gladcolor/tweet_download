@@ -144,12 +144,12 @@ def execute_download(
     query = "telemedicine  OR telehealth  OR telecare"
 
     start_time = "2019-01-01T00:00:00Z"
-    end_time   = "2019-01-13T00:59:59Z"
+    end_time   = "2020-01-13T00:59:59Z"
     # end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 1000  # tweets
+    chunk_size = 100000  # tweets
 
     # Set the save path
     saved_path = r"downloaded_tweets_test2"
@@ -212,7 +212,7 @@ def execute_download(
     logger.info("PID %s execute_download() start!" % os.getpid())
 
     expected_tweet_count_total = get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None)
-    print(f"Found {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}")
+    logger.info(f"Found {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}")
     tweet_count_total = 0
 
     merge_file_count = round(chunk_size / max_results, 0)
@@ -255,7 +255,7 @@ def execute_download(
 
             tweet_count_total += max_results
 
-            if len(data_filename_list_mp) > 5:
+            if len(data_filename_list_mp) > 10:
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
                 merge_process.start()
