@@ -43,6 +43,8 @@ There are four folders to store download tweets:
   
  # Rate limit
    300 request per 15 minutes; 500 tweets per requets (or 100 tweet with `context_annotation`). So the highest speed is 600,000 tweets per hour. However, due to heavy converting computations, the current speed is about 200 request per 15 minutes, which is 400,000 tweets per hour. In my obersvation, the speed is 200,000 tweets per hour only.
+   
+   Upated: after adding a sub-process to merge the returned tweets, the download speed now is about 500,000 tweet/hour. 
  
  # Other solutions 
  

@@ -112,16 +112,26 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
     return tweet_count_total  # , json_response
 
 def merge_a_response_list(data_filename_list, merged_df_list, save_path):
+    logger.info("PID %s merge_a_response_list() start!" % os.getpid())
+
+    #
+    # print("len(data_filename_list): ", len(data_filename_list))
+    # print("len(data_filename_list): ", len(data_filename_list))
     while len(data_filename_list) > 0:
+        # print("len(data_filename_list): ", len(data_filename_list))
+        data_filename = data_filename_list.pop(0)
+        # time.sleep(1)
         try:
-            data_filename = data_filename_list.pop(0)
+            logger.info("PID %s Merging %s" % (os.getpid(), data_filename))
             df_merged = helper.merge_a_response(data_filename, save_path=save_path)
             merged_df_list.append(df_merged)
         except Exception as e:
             logger.error(f"{e}, {data_filename}", exc_info=True)
             print(data_filename)
             continue
+    logger.info("PID %s merge_a_response_list() end!" % os.getpid())
     # return df_merged
+
 
 def execute_download(
                     is_zipped=False,
@@ -199,21 +209,22 @@ def execute_download(
             max_results = 100
             query_params['query'] = max_results
 
+    logger.info("PID %s execute_download() start!" % os.getpid())
+
     expected_tweet_count_total = get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None)
     print(f"Found {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}")
     tweet_count_total = 0
-    merged_df_list_mp = mp.Manager().list()
+
     merge_file_count = round(chunk_size / max_results, 0)
+    merge_file_count = int(merge_file_count)
 
     data_filename_list_mp = mp.Manager().list()
+    merged_df_list_mp = mp.Manager().list()
 
-    merge_process = mp.Process(target=merge_a_response_list, args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
-    merge_process.start()
-    merge_process.join()
-
+    t0 = time.perf_counter()
     while next_token != "":
         try:
-            # t1 = time.perf_counter()
+            #
             json_response = helper.connect_to_endpoint(search_url, headers, query_params)
             # needs about 2 - 3 seconds. Hard to accelerate.
             # print("response time (second): ", time.perf_counter() - t1)
@@ -225,8 +236,8 @@ def execute_download(
 
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
 
-            if isinstance(json_response, dict): # if have returned tweet
-                json_response_list.append(json_response)
+            # if isinstance(json_response, dict): # if have returned tweet
+                # json_response_list.append(json_response)
 
             data_filename = save_search(json_response, saved_path)
             # Saving time is about 0.3 seconds.
@@ -244,23 +255,35 @@ def execute_download(
 
             tweet_count_total += max_results
 
+            if len(data_filename_list_mp) > 5:
+                merge_process = mp.Process(target=merge_a_response_list,
+                                           args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
+                merge_process.start()
+                # merge_process.join()
+
             # print("merge time (second): ", time.perf_counter() - t2)
             # Merging time is about 1.4 seconds .
 
             # print("request and merge time (second): ", time.perf_counter() - t1)  # < 3.0 seconds using multi-processing
+
 
             if len(merged_df_list_mp) >= merge_file_count or next_token == "":
                 logger.info("Merging a tweets chuck...")
                 logger.info("data_filename_list_mp lengh: %d" % len(data_filename_list_mp))
                 logger.info("merged_df_list lengh: %d" % len(merged_df_list_mp))
                 if next_token == "":
-                    merged_df_list = []
-                    merge_a_response_list(data_filename_list_mp, merged_df_list, line_tweet_dir)
-                    df_all = pd.concat(merged_df_list)
-                    # pass
-                else:
-                    df_all = pd.concat(merged_df_list_mp)
 
+                    merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir)
+                    # df_all = pd.concat(merged_df_list)
+                # else:
+
+                merged_df_list = []
+                for i in range(int(merge_file_count)):
+                    try:
+                        merged_df_list.append(merged_df_list_mp.pop(0))
+                    except:
+                        pass
+                df_all = pd.concat(merged_df_list)
 
                 # time.sleep(3) # wait for the merging process.
                 # while len(data_filename_list_mp) != 0:
@@ -290,9 +313,10 @@ def execute_download(
                 new_name = os.path.join(cluster_csvs_dir, base_name + f"{suffix}")
                 df_all_cluster.to_csv(new_name, index=False)
 
-                merged_df_list_mp[:] = []
-
                 logger.info("Finished converting a tweets chuck to cluster format: %s" % new_name)
+
+                speed = tweet_count_total / (time.perf_counter() - t0) * 3600 # per hour
+                logger.info("Speed: %.0f tweet/hour" % speed )
 
             if next_token == "":
                 print("No next page! Exit.")
@@ -324,4 +348,8 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     execute_download()
+    # data_filename_list = list(range(10))
+    # merged_df_list = []
+    # save_path = "test"
+    # merge_a_response_list(data_filename_list, merged_df_list, save_path)
     # merge_df = helper.merge_results(saved_path)
