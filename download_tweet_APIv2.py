@@ -110,7 +110,7 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
 
     return tweet_count_total  # , json_response
 
-def execute_download(saved_path=os.getcwd(),
+def execute_download(
                     is_zipped=False,
                      ):
     if is_zipped:
@@ -120,24 +120,17 @@ def execute_download(saved_path=os.getcwd(),
 
     query = "telemedicine  OR telehealth  OR telecare"
 
-    # query = f"({keyword})"
     start_time = "2019-01-01T00:00:00Z"
-    # end_time   = "2019-12-31T23:59:59Z"
-    end_time   = "2021-12-01T00:00:00.000Z"
+    end_time   = "2019-01-05T23:59:59Z"
+    # end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
-    # until_id = '1139156316075757568'
+
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 500000  # tweets
+    chunk_size = 1000  # tweets
     tweet_count_total = 0
 
-    # since_id = "139819805172285849"  # cannot used with start/end_time!
-
-    # borrow from Twitter:
-    # https://github.com/twitterdev/Twitter-API-v2-sample-code/blob/master/Full-Archive-Search/full-archive-search.py
-    search_url = "https://api.twitter.com/2/tweets/search/all"
-
-    # saved_path = os.path.join(os.getcwd(), "saved_tweets")
-    saved_path = r"downloaded_tweets_test"
+    # Set the save path
+    saved_path = r"downloaded_tweets_test2"
     raw_tweet_dir = os.path.join(saved_path, 'raw_tweets')
     line_tweet_dir = os.path.join(saved_path, 'line_tweets')
     chunks_dir =  os.path.join(saved_path, 'chunks_tweets')
@@ -149,6 +142,14 @@ def execute_download(saved_path=os.getcwd(),
 
 
     has_context_annotations = False
+
+    # since_id = "139819805172285849"  # cannot used with start/end_time!
+    # until_id = '1139156316075757568'
+
+    # borrow from Twitter:
+    # https://github.com/twitterdev/Twitter-API-v2-sample-code/blob/master/Full-Archive-Search/full-archive-search.py
+
+
 
     start_timer = time.perf_counter()
 
@@ -165,6 +166,7 @@ def execute_download(saved_path=os.getcwd(),
 
                     # NO context_annotations,  max_results can be 500
                     'tweet.fields': 'attachments,author_id,conversation_id,created_at,entities,geo,id,in_reply_to_user_id,lang,public_metrics,possibly_sensitive,referenced_tweets,reply_settings,source,text,withheld', \
+
                     'place.fields': 'contained_within,country,country_code,full_name,geo,id,name,place_type', \
                     "user.fields": 'created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld', \
                     "media.fields": "duration_ms,height,media_key,preview_image_url,type,url,width,public_metrics", \
@@ -174,6 +176,7 @@ def execute_download(saved_path=os.getcwd(),
                     # Spaces are ephemeral and become unavailable after they end or when they are canceled by their creator.
                     "start_time": start_time, \
                     "end_time": end_time, \
+
                     # "since_id":since_id, \  # cannot used with start/end_time!
                     # "until_id": until_id,    # cannot used with start/end_time!
                     }
@@ -273,16 +276,5 @@ access_token_secret = tokens[4]
 
 
 if __name__ == '__main__':
-
-    # token_path = r'K:\Research\tweet_downloading\python_code\tweet_api_keys.txt'
-
-    # tokens = helper.get_api_token(token_path)
-    # consumer_key = tokens[0]
-    # consumer_secret = tokens[1]
-    # bearer_token = tokens[2]
-    # access_token = tokens[3]
-    # access_token_secret = tokens[4]
-
-    saved_path = r'K:\Research\tweet_downloading\python_code\downloaded_tweets_test'
-    execute_download(saved_path=saved_path)
+    execute_download()
     # merge_df = helper.merge_results(saved_path)

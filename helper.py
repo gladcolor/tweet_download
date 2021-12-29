@@ -468,18 +468,34 @@ def get_userMentions(row):
 def get_urls(row):
     try:
         cell_text = row['entities']
-        if cell_text == "":
-            return ""
+        # if cell_text == "":
+        #     return ""
         entities = ast.literal_eval(cell_text)
+
+
         # if len(entities) > 1:
         #     print("entities' length > 1 !!")
 
         urls = entities.get('urls', "")
         urls = [u['expanded_url'] for u in urls]
-        urls = ';'.join(urls)
+        # urls = ';'.join(urls)
     except:
-        urls = ''
-    return urls
+        urls = []
+    try:
+        # get media url
+        cell_text = row['media_table_rows']
+        if cell_text == "":
+            media_table_rows = []
+        else:
+            media_table_rows = ast.literal_eval(cell_text)
+
+        media_urls = [u['media_table_url'] for u in media_table_rows]
+        # media_urls = ';'.join(media_urls)
+    except:
+        media_urls = []
+
+    all_list = urls + media_urls
+    return ";".join(all_list)
 
 def get_hashtags(row):
     try:
@@ -756,11 +772,3 @@ def convert_to_cluster(df):
     return new_df
 
 
-
-# query = "telemedicine  OR telehealth  OR telecare "
-#
-# start_time = "2021-11-21T00:00:01Z"
-# end_time = "2021-11-30T00:00:01Z"
-#
-# tweet_count_total = get_tweet_count(query=query, start_time=start_time, end_time=end_time, granularity='day')
-# tweet_count_total
