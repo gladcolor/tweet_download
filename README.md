@@ -2,7 +2,7 @@
 
 This program downloads tweets from Twitter APIs(v2) using Academic development accounts. All returned information are stored.
 
-There are four folders to store download tweets: 
+There are four folders to store downloaded tweets: 
 
 ![](images/folders.png)
 - `raw_tweets`: raw data from Twitter, including five parts of each request: `data`, `media`, `places`, `users`, and `polls`. Each part is stored as a individual .CSV file. Strings in these .CSV files are cleaned by removing newlines, tabs, and commas (`,` is replaced by `;`). Please refer to [Twitter API Documentation](https://developer.twitter.com/en/docs/twitter-api/fields).  
@@ -31,24 +31,24 @@ There are four folders to store download tweets:
     Access Token: copy_your_key_here
     Access Token Secret: copy_your_key_here
     ```
-   - Pandas
+   - Packages: tqdm, requests, pandas, vaderSentiment, emoji
 
 * Using `download_tweet_APIv2.py` to download tweets.
  
      Edit the parameters in the fucntion of `execute_download`, such as `saved_path`, `query`, `start_time`, `end_time`, and `chunk_size`. 
  
      To build a query, you need to read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md). Here is a example: 
- `vaccin OR vaccination OR vaccine OR vaccinate place_country:AU`: tweets in Australia contain words `vaccin`, `vaccination`, or `vaccinate`.
+ `vaccin OR vaccination OR vaccine OR vaccinate place_country:AU`. It means to collect tweets posted in Australia contain words `vaccin`, `vaccination`, or `vaccinate`.
  
   
  # Rate limit
-   300 request per 15 minutes; 500 tweets per requets (or 100 tweet with `context_annotation`). So the highest speed is 600,000 tweets per hour. However, due to heavy converting computations, the current speed is about 200 request per 15 minutes, which is 400,000 tweets per hour. In my obersvation, the speed is 200,000 tweets per hour only.
+   According to [official documentation](https://developer.twitter.com/en/docs/twitter-api/rate-limits), 300 requests are allowed per 15 minutes; 500 tweets per requets (or 100 tweet with `context_annotation`). So the highest speed is 600,000 tweets per hour. However, due to heavy converting computations, the current speed is about 100 request per 15 minutes, which is 200,000 tweets per hour.
    
-   Upated: after adding a sub-process to merge the returned tweets, the download speed now is about 500,000 tweet/hour. 
+   Upated: after adding sub-processes to merge responses and to convert the tweet chunks, the downloading speed now is about 500,000 tweet/hour. 
  
  # Other solutions 
  
-   If you do not like this repository, [twarc](https://github.com/DocNow/twarc) is highly recommanded.    
+   If you do not like this repository, [twarc](https://github.com/DocNow/twarc) is highly recommanded. The purpose my repository is to collect all data from API, which twarc does not, at least its plug-in [twarc-csv](https://github.com/DocNow/twarc-csv).    
   
  # To do
  
