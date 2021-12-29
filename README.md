@@ -16,9 +16,9 @@ There are four folders to store download tweets:
     
     >**Context annotations**: Derived from the analysis of a Tweet’s text and will include a domain and entity pairing which can be used to discover Tweets on topics that may have been previously difficult to surface. At present, we’re using a list of 50+ domains to categorize Tweets.
 
-- `chunks_tweets`: Merged `line_tweets` for better managements of Hadoop systems. Each merger .CSV files have about 50,000 - 500,000 tweets. 
+- `chunks_tweets`: Merged `line_tweets` for better managements of Hadoop systems. Each merged .CSV files have about 50,000 - 500,000 tweets. 
 
-- `cluster_csvs`: Converted `chunks_tweets`. Some fields are expand for our Hadoop systems.
+- `cluster_csvs`: Converted `chunks_tweets`. Some fields are expanded for our Hadoop systems.
 
  
  # How to use
@@ -50,8 +50,8 @@ There are four folders to store download tweets:
   
  # To do
  
- - Adaptive sleeping when break the rate limits.
+ - Adaptive sleeping when breaking the rate limits.
  - Code refining.
- - Result merging and compressed.
+ - Result merging and compressing.
  
 

@@ -127,7 +127,6 @@ def execute_download(
 
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
     chunk_size = 1000  # tweets
-    tweet_count_total = 0
 
     # Set the save path
     saved_path = r"downloaded_tweets_test2"
@@ -148,7 +147,6 @@ def execute_download(
 
     # borrow from Twitter:
     # https://github.com/twitterdev/Twitter-API-v2-sample-code/blob/master/Full-Archive-Search/full-archive-search.py
-
 
 
     start_timer = time.perf_counter()
@@ -261,8 +259,6 @@ def execute_download(
             time.sleep(time_window)
 
             continue
-
-
 
 token_path = r'tweet_api_keys.txt'
 
