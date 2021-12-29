@@ -146,23 +146,46 @@ def convert_to_cluster_process(all_df, new_name):
 def execute_download(
                     is_zipped=False,
                      ):
+    """":argument
+
+    main workflow:
+    1. parameter set up
+    2. get the first response.
+    3. pagnation: process each page using the returned page_token. The Twitter server needs about 3 seconds to return response.
+    4. data processing:
+        1) save the raw data of each page (0.3 seconds per response);
+        2) use a sub-process to merge the five parts of tweets data (1.4 seconds per response, paralleling with the main process);
+        3) the main process merge several response CSV files to a chunk
+        4) use a sub-process to convert the chunk CSV to cluster format.
+
+    rate limit: 520,000 tweet/hour (without context_annotation)
+
+    """
+
+    ############## SET YOUR PARAMERTERS HERE ######################
+    query = "telemedicine  OR telehealth  OR telecare"
+
+    start_time = "2019-01-01T00:00:00Z"
+    end_time   = "2019-01-10T00:59:59Z"
+    # end_time   = "2021-12-01T00:00:00.000Z"
+    # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
+
+    max_results = 500  # max_results can be 500 if do not request the field: context_annotations
+    chunk_size = 100000  # tweets
+
+    # Set the save path
+    saved_path = r"downloaded_tweets_test2"
+    ###############################################################
+
+
     if is_zipped:
         suffix = '.csv.gz'
     else:
         suffix = '.csv'
 
-    query = "telemedicine  OR telehealth  OR telecare"
 
-    start_time = "2019-01-01T00:00:00Z"
-    end_time   = "2019-01-13T00:59:59Z"
-    # end_time   = "2021-12-01T00:00:00.000Z"
-    # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
-    max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 1000  # tweets
 
-    # Set the save path
-    saved_path = r"downloaded_tweets_test2"
     raw_tweet_dir = os.path.join(saved_path, 'raw_tweets')
     line_tweet_dir = os.path.join(saved_path, 'line_tweets')
     chunks_dir =  os.path.join(saved_path, 'chunks_tweets')
@@ -223,6 +246,7 @@ def execute_download(
 
     expected_tweet_count_total = get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None)
     logger.info(f"Found {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}")
+    print(f"\nFound {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}\n")
     tweet_count_total = 0
 
     merge_file_count = round(chunk_size / max_results, 0)
@@ -232,6 +256,8 @@ def execute_download(
     merged_df_list_mp = mp.Manager().list()
 
     t0 = time.perf_counter()
+
+    # 1) request response
     while next_token != "":
         try:
             #
@@ -239,26 +265,24 @@ def execute_download(
             # needs about 2 - 3 seconds. Hard to accelerate.
             # print("response time (second): ", time.perf_counter() - t1)
 
-
-
             next_token = json_response['meta'].get('next_token', "")
             query_params.update({"next_token": next_token})
 
+            # if request too many times, wait for 1 minute.
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
 
-            # if isinstance(json_response, dict): # if have returned tweet
-                # json_response_list.append(json_response)
-
+            # save the raw data of each page (0.3 seconds per response)
             data_filename = save_search(json_response, saved_path)
-            # Saving time is about 0.3 seconds.
+
 
             # t2 = time.perf_counter()
-            data_filename_list_mp.append(data_filename)
+            data_filename_list_mp.append(data_filename)  # put the name of the saved file to a list for further merging.
+            # _mp means it is a shared list for multiprocessing.
+
             # df_merged = helper.merge_a_response(data_filename, save_path=line_tweet_dir)
             # df_merged = merge_a_response_list(data_filename_list_mp, merged_df_list=merged_df_list_mp, save_path=line_tweet_dir)
 
             # merged_df_list_mp.append(df_merged)
-
 
             total += int(json_response['meta']['result_count'])
             logger.info("Downloaded %s tweets in total." % total)
@@ -266,6 +290,9 @@ def execute_download(
             tweet_count_total += max_results
 
             if len(data_filename_list_mp) > 5:
+                # 2) use a sub-process to merge the five parts of tweets data (1.4 seconds per response, paralleling with the main process);
+                # merge the five parts of a response in data_filename_list_mp, then put the result into merged_df_list_mp
+                # the merge file is stored in folder: line_tweet_dir
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
                 merge_process.start()
@@ -278,16 +305,16 @@ def execute_download(
 
 
             if len(merged_df_list_mp) >= merge_file_count or next_token == "":
+                # use a sub-process to merge several response CSV files to a chunk and to convert the chunk to cluster format.
                 logger.info("Merging a tweets chuck...")
                 logger.info("data_filename_list_mp lengh: %d" % len(data_filename_list_mp))
                 logger.info("merged_df_list lengh: %d" % len(merged_df_list_mp))
-                if next_token == "":
-
+                if next_token == "":  # the last several response, not enough for the merge_file_count
                     merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir)
                     # df_all = pd.concat(merged_df_list)
-                # else:
 
-                merged_df_list = []
+                merged_df_list = []  # 3) make a chunk in the main process
+                # pop  merged_df from merged_df_list_mp until the number is up to merge_file_count
                 for i in range(int(merge_file_count)):
                     if len(merged_df_list_mp) > 0:
                         merged_df_list.append(merged_df_list_mp.pop(0))
@@ -300,16 +327,10 @@ def execute_download(
                     # merge_process.wait()
                 # wait(merged_df_list_mp)
 
-
-                    # break
-
                 lastest_time = df_all['created_at'].max().replace(":", "_")
                 oldest_time  = df_all['created_at'].min().replace(":", "_")
-
                 base_name = f"{oldest_time}_{lastest_time}_{len(df_all)}"  # use tweet time as basename
-
                 new_name = os.path.join(chunks_dir, base_name + f"{suffix}")
-                # new_name = os.path.join(chunks_dir, base_name)
                 df_all = df_all.sort_index(axis=1)
 
                 df_all.to_csv(new_name, index=False)
@@ -320,14 +341,15 @@ def execute_download(
 
                 # converted_df_list = mp.Manager().list()
                 new_name = os.path.join(cluster_csvs_dir, base_name + f"{suffix}")
+
+                # 4) use a sub-process to  convert the chunk to cluster format.
                 convert_process = mp.Process(target=convert_to_cluster_process,
                                            args=(df_all,  new_name))
                 convert_process.start()
-                # convert_process.join()
+                if next_token == "":
+                    convert_process.join()  # the main process will wait for the sub-process
                 # df_all_cluster = converted_df_list[0]
-
                 # df_all_cluster = helper.convert_to_cluster(df_all)
-
 
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600 # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed )
