@@ -190,13 +190,14 @@ def execute_download(
     # NOTE: () is required!
 
 
+    # start_time = "2020-12-05T09:25:03Z"
     start_time = "2020-01-01T00:00:00Z"
     end_time   = "2021-01-01T00:00:00Z"
     # end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 500  # tweets
+    chunk_size = 500000  # tweets
 
     # Set the save path
     saved_path = r"downloaded_tweets_suicide_2020"
@@ -321,7 +322,8 @@ def execute_download(
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
                 merge_process.start()
-                # merge_process.join()
+                speed = tweet_count_total / (time.perf_counter() - t0) * 3600  # per hour
+                logger.info("Speed: %.0f tweet/hour" % speed)
 
             # print("merge time (second): ", time.perf_counter() - t2)
             # Merging time is about 1.4 seconds .

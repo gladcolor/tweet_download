@@ -77,7 +77,7 @@ def is_too_many_requests(json_response, start_time):
     now = time.perf_counter()
     elapsed_time = now - start_time
     time_window = 15 * 60  # seconds, 15 min
-    time_window = 1 * 60  # seconds, 15 min
+    time_window = 2 * 60  # seconds, 15 min
     title = json_response.get('title', "")
     if title == 'Too Many Requests':
         is_too_many = True
@@ -132,68 +132,83 @@ def refine_data(df):
 
 
 def find_media_row(row, df_media):
-    cell_text = row["attachments"]
-    if len(cell_text) > 1:
-        attachments_dict = ast.literal_eval(cell_text)
-    else:
-        return ""
+    try:
+        cell_text = row["attachments"]
+        cell_text = str(cell_text)
 
-    if isinstance(attachments_dict, dict):
-        media_keys = attachments_dict.get("media_keys", "")
-        # if len(media_keys) > 1:
-        #     print(media_keys)
-
-        if media_keys == "":
+        if len(cell_text) > 1:
+            if cell_text[0] != "{" and cell_text[-1] != "{":
+                return ""
+            attachments_dict = ast.literal_eval(cell_text)
+        else:
             return ""
-        media_rows = []
-        # print(df_media)
-        # print(attachments_dict)
 
-        targets_df = df_media[df_media['media_table_media_key'].isin(media_keys)]
+        if isinstance(attachments_dict, dict):
+            media_keys = attachments_dict.get("media_keys", [])
+            # if len(media_keys) > 1:
+            #     print(media_keys)
 
-        targets_json = json.dumps(json.loads(targets_df.to_json(orient='records')))
+            if media_keys == "":
+                return ""
+            media_rows = []
+            # print(df_media)
+            # print(attachments_dict)
 
-        # for key in media_keys:
-        #     key = str(key)
-        #     if len(key) > 1:
-        #         # print(key)
-        #         # print(df_media['media_table_media_key'])
-        #         row = df_media[df_media['media_table_media_key'] == key]
-        #
-        #         row = df_media[df_media['media_table_media_key'] == key].to_json(orient='records')#[1:-1]
-        #         row = json.dumps(row)
-        #         # print(df_media[df_media['media_table_media_key'] == key])
-        #         media_rows.append(row)
-        # print(media_rows)
-        return targets_json
-    return ""
+            targets_df = df_media[df_media['media_table_media_key'].isin(media_keys)]
+
+            targets_json = json.dumps(json.loads(targets_df.to_json(orient='records')))
+
+            # for key in media_keys:
+            #     key = str(key)
+            #     if len(key) > 1:
+            #         # print(key)
+            #         # print(df_media['media_table_media_key'])
+            #         row = df_media[df_media['media_table_media_key'] == key]
+            #
+            #         row = df_media[df_media['media_table_media_key'] == key].to_json(orient='records')#[1:-1]
+            #         row = json.dumps(row)
+            #         # print(df_media[df_media['media_table_media_key'] == key])
+            #         media_rows.append(row)
+            # print(media_rows)
+            return targets_json
+        return ""
+    except Exception as e:
+        print("Error in find_media_row():", e, cell_text)
+        logger.error(e, exc_info=True)
+        return ""
 
 
 def find_poll_row(row, df_poll):
-    cell_text = row["attachments"]
-    if len(cell_text) > 1:
-        attachments_dict = ast.literal_eval(cell_text)
-    else:
-        return ""
-
-    if isinstance(attachments_dict, dict):
-        poll_ids = attachments_dict.get("poll_ids", "")
-        if poll_ids == "":
+    try:
+        cell_text = row["attachments"]
+        cell_text = str(cell_text)
+        if len(cell_text) > 1:
+            if cell_text[0] != "{" and cell_text[-1] != "{":
+                return ""
+            attachments_dict = ast.literal_eval(cell_text)
+        else:
             return ""
-        poll_rows = []
 
-        target_df = df_poll[df_poll['polls_table_id'].isin(poll_ids)]
-        target_json = json.dumps(json.loads(target_df.to_json(orient='records')))
-        # print(df_poll)
-        # print(attachments_dict)
-        # for i in poll_ids:
-        #     i = str(i)
-        #     if len(i) > 1:
-        #         row = df_poll[df_poll['polls_table_id'] == i].to_json(orient='records')
-        #         poll_rows.append(row)
+        if isinstance(attachments_dict, dict):
+            poll_ids = attachments_dict.get("poll_ids", [])
+            if poll_ids == "":
+                return ""
+            poll_rows = []
 
-        return target_json
-    # return ""
+            target_df = df_poll[df_poll['polls_table_id'].isin(poll_ids)]
+            target_json = json.dumps(json.loads(target_df.to_json(orient='records')))
+            # print(df_poll)
+            # print(attachments_dict)
+            # for i in poll_ids:
+            #     i = str(i)
+            #     if len(i) > 1:
+            #         row = df_poll[df_poll['polls_table_id'] == i].to_json(orient='records')
+            #         poll_rows.append(row)
+
+            return target_json
+    except Exception as e:
+        print("Error in find_poll_row():", e)
+        logger.error(e, exc_info=True)
 
 
 def get_lonlat(row):
@@ -251,9 +266,10 @@ def merge_a_response(data_file_name, save_path=""):
             df_users['id'] = df_users['id'].astype(str)
             df_users = df_users[df_users['id'].str.isnumeric()]
             df_users["description"] = df_users["description"].str.replace("\n", " ")
-            df_users["id"] = df_users["id"].astype(int)  # there may be some error rows such as the empyty id
+            # df_users["id"] = df_users["id"].astype(int)  # there may be some error rows such as the empyty id
             new_column_name = {name: "users_table_" + name for name in df_users.columns}
             df_users = df_users.rename(columns=new_column_name)
+            df_merged['author_id'] = df_merged['author_id'].astype(str)
             df_merged = pd.merge(df_merged, df_users, how='left', left_on="author_id", right_on="users_table_id")
 
             # process media file
