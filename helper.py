@@ -213,7 +213,7 @@ def get_lonlat(row):
 def merge_a_response(data_file_name, save_path=""):
     try:
         d = data_file_name   # data csv file
-        df_data = pd.read_csv(d)
+        df_data = pd.read_csv(d, engine='python')
         # print(d)
         df_data = df_data.fillna("")
         df_data = refine_data(df_data)
@@ -223,7 +223,7 @@ def merge_a_response(data_file_name, save_path=""):
         # process places file
         places_csv = d.replace("data.csv", "includes_places.csv")
         if os.path.exists(places_csv):
-            df_places = pd.read_csv(places_csv).fillna("")
+            df_places = pd.read_csv(places_csv, engine='python').fillna("")
         else:
             df_places = pd.DataFrame(columns=['country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type'])
         new_column_name = {name: "places_table_" + name for name in df_places.columns}
@@ -233,7 +233,7 @@ def merge_a_response(data_file_name, save_path=""):
         # process tweets file
         tweets_csv = d.replace("data.csv", "includes_tweets.csv")
         if os.path.exists(tweets_csv):
-            df_tweets = pd.read_csv(tweets_csv).fillna("")
+            df_tweets = pd.read_csv(tweets_csv, engine='python').fillna("")
             df_tweets["text"] = df_tweets["text"].str.replace("\n", " ")
             if 'in_reply_to_user_id' not in df_tweets.columns:
                 df_tweets['in_reply_to_user_id'] = ''
@@ -246,8 +246,12 @@ def merge_a_response(data_file_name, save_path=""):
         # process users file
         users_csv = d.replace("data.csv", "includes_users.csv")
         if os.path.exists(tweets_csv):
-            df_users = pd.read_csv(users_csv).fillna("")
+            df_users = pd.read_csv(users_csv, engine='python').fillna("")
+            df_users = df_users[df_users['id'] != '']
+            df_users['id'] = df_users['id'].astype(str)
+            df_users = df_users[df_users['id'].str.isnumeric()]
             df_users["description"] = df_users["description"].str.replace("\n", " ")
+            df_users["id"] = df_users["id"].astype(int)  # there may be some error rows such as the empyty id
             new_column_name = {name: "users_table_" + name for name in df_users.columns}
             df_users = df_users.rename(columns=new_column_name)
             df_merged = pd.merge(df_merged, df_users, how='left', left_on="author_id", right_on="users_table_id")
@@ -255,7 +259,7 @@ def merge_a_response(data_file_name, save_path=""):
             # process media file
         media_csv = d.replace("data.csv", "includes_media.csv")
         if os.path.exists(media_csv):
-            df_media = pd.read_csv(media_csv).fillna("")
+            df_media = pd.read_csv(media_csv, engine='python').fillna("")
         else:
             df_media = pd.DataFrame(columns=['duration_ms', 'height', 'media_key', 'preview_image_url', 'public_metrics', 'type', 'url', 'width'])
         df_media['media_key'] = df_media['media_key'].astype(str)
@@ -266,7 +270,7 @@ def merge_a_response(data_file_name, save_path=""):
         # process poll file
         poll_csv = d.replace("data.csv", "includes_polls.csv")
         if os.path.exists(poll_csv):
-            df_poll = pd.read_csv(poll_csv).fillna("")
+            df_poll = pd.read_csv(poll_csv, engine='python').fillna("")
         else:
             df_poll = pd.DataFrame(
                 columns=['duration_minutes', 'end_datetime', 'id', 'options', 'voting_status'])
@@ -772,3 +776,6 @@ def convert_to_cluster(df):
     return new_df
 
 
+if __name__ == "__main__":
+    data_file_name = r'/media/gpu/Seagate/Research/tweet_download/downloaded_tweets_suicide_2020/raw_tweets/2020-12-09T03_18_30.000Z_2020-12-09T22_11_39.000Z_482_data.csv'
+    merge_a_response(data_file_name, save_path="")
