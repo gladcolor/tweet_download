@@ -233,6 +233,11 @@ def merge_a_response(data_file_name, save_path=""):
         df_data = df_data.fillna("")
         df_data = refine_data(df_data)
 
+        df_data_columns = ['author_id', 'conversation_id', 'created_at', 'entities', 'geo', 'id', 'lang', 'possibly_sensitive', 'public_metrics', 'reply_settings', 'source', 'text']
+        for c in df_data_columns:
+            if c not in df_data.columns:
+                df_data[c]=''
+
         df_merged = df_data
 
         # process places file
@@ -244,6 +249,13 @@ def merge_a_response(data_file_name, save_path=""):
         new_column_name = {name: "places_table_" + name for name in df_places.columns}
         df_places = df_places.rename(columns=new_column_name)
         df_merged = pd.merge(df_merged, df_places, how='left', left_on="place_id", right_on="places_table_id")
+
+        places_columns = ['country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type']
+        for c in places_columns:
+            c = "places_table_" + c
+            if c not in df_merged.columns:
+                df_merged[c] = ''
+
 
         # process tweets file
         tweets_csv = d.replace("data.csv", "includes_tweets.csv")
@@ -258,19 +270,34 @@ def merge_a_response(data_file_name, save_path=""):
             df_tweets = df_tweets.rename(columns=new_column_name)
             df_merged = pd.merge(df_merged, df_tweets, how='left', left_on="id", right_on="tweets_table_id")
 
+        tweets_df_columns = ['attachments', 'author_id', 'conversation_id', 'created_at', 'geo', 'id', 'in_reply_to_user_id', 'lang', 'possibly_sensitive', 'public_metrics', 'referenced_tweets', 'reply_settings', 'source', 'text']
+        # tweets_df_columns = {name: "tweets_table_" + name for name in tweets_df_columns}
+        for c in tweets_df_columns:
+            c = "tweets_table_" + c
+            if c not in df_merged.columns:
+                df_merged[c] = ''
+
+
         # process users file
         users_csv = d.replace("data.csv", "includes_users.csv")
-        if os.path.exists(tweets_csv):
+        users_columns = ['created_at', 'description', 'entities', 'id', 'location', 'name', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'username', 'verified']
+        if os.path.exists(users_csv):
             df_users = pd.read_csv(users_csv, engine='python').fillna("")
             df_users = df_users[df_users['id'] != '']
             df_users['id'] = df_users['id'].astype(str)
             df_users = df_users[df_users['id'].str.isnumeric()]
             df_users["description"] = df_users["description"].str.replace("\n", " ")
             # df_users["id"] = df_users["id"].astype(int)  # there may be some error rows such as the empyty id
+
             new_column_name = {name: "users_table_" + name for name in df_users.columns}
             df_users = df_users.rename(columns=new_column_name)
             df_merged['author_id'] = df_merged['author_id'].astype(str)
             df_merged = pd.merge(df_merged, df_users, how='left', left_on="author_id", right_on="users_table_id")
+
+        for c in users_columns:
+            c = "users_table_" + c
+            if c not in df_merged.columns:
+                df_merged[c] = ''
 
             # process media file
         media_csv = d.replace("data.csv", "includes_media.csv")
@@ -283,6 +310,12 @@ def merge_a_response(data_file_name, save_path=""):
         df_media = df_media.rename(columns=new_column_name)
         df_merged["media_table_rows"] = df_merged.apply(find_media_row, args=(df_media,), axis=1)
 
+        media_columns = ['height', 'media_key', 'type', 'url', 'width']
+        for c in media_columns:
+            c = "media_table_" + c
+            if c not in df_merged.columns:
+                df_merged[c] = ''
+
         # process poll file
         poll_csv = d.replace("data.csv", "includes_polls.csv")
         if os.path.exists(poll_csv):
@@ -294,6 +327,12 @@ def merge_a_response(data_file_name, save_path=""):
         new_column_name = {name: "polls_table_" + name for name in df_poll.columns}
         df_poll = df_poll.rename(columns=new_column_name)
         df_merged["polls_table_rows"] = df_merged.apply(find_poll_row, args=(df_poll,), axis=1)
+        poll_columns = ['duration_minutes', 'end_datetime', 'id', 'options']
+        for c in poll_columns:
+            c = "polls_table_" + c
+            if c not in df_merged.columns:
+                df_merged[c] = ''
+
 
     except Exception as e:
         print("Error in merge_results for loop: ", e)
@@ -717,6 +756,8 @@ def clean_twts(tw):  # input is a string
   # remove emojis
     tw = emoji.demojize(tw)
 
+
+
     return tw
 #######################################
 
@@ -733,9 +774,14 @@ def convert_to_cluster(df):
     new_df['tweetid'] = df['id']
     new_df['userid'] = df['author_id']
     # new_df['username'] = df.apply(get_username, axis=1)
-    new_df['username'] = df['users_table_name'].replace("\t", " ").replace("\r", ";").replace(",", ";").replace('\n', ';').str.strip()
+    try:
+        new_df['username'] = df['users_table_name'].replace("\t", " ").replace("\r", ";").replace(",", ";").replace('\n', ';').str.strip()
+    except Exception as e:
+        logger.info("No name file in users_table.")
+        print(df)
+        new_df['username'] = ""
     new_df['postdate'] = df['created_at']
-    new_df['message'] = df['text']
+    new_df['message'] = df['text'].replace('\n', ';')
     new_df['geoType'] = df.apply(get_geoType, axis=1)
     new_df['longitude'] = df.apply(get_longitude, axis=1)
     new_df['latitude'] = df.apply(get_latitude, axis=1)
@@ -760,7 +806,7 @@ def convert_to_cluster(df):
     new_df['language'] = ""   # Do not know how to obtain yet.  # df.apply(get_language, axis=1)
     new_df['statusescount'] =  ""   # Do not know how to obtain yet.  # df.apply(get_statusesCount, axis=1)
     new_df['replytostatusid'] = ""   # Do not know how to obtain yet.  # df.apply(get_replyToStatusId, axis=1)
-    new_df['replytoUserid'] = df['in_reply_to_user_id']
+    new_df['replytoUserid'] = df['tweets_table_in_reply_to_user_id']
     new_df['userverified'] = df['users_table_verified']
     new_df['userdescription'] = df['users_table_description'].replace("\t", " ").replace("\r", ";").replace(",", ";").replace('\n', ';').str.strip().replace('\n', ';')
     new_df['userurl'] = df['users_table_url']
