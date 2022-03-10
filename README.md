@@ -40,6 +40,8 @@ There are four folders to store downloaded tweets:
      To build a query, you need to read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md). Here is a example: 
  `vaccin OR vaccination OR vaccine OR vaccinate place_country:AU`. It means to collect tweets posted in Australia contain words `vaccin`, `vaccination`, or `vaccinate`.
  
+ `has:geo`, ` from:cnn OR from:FoxNews`. Note "OR" is capitalized.
+ 
 * Please pay attention to the tweet count returned at the begining. If it is not your expectation, just stop the program then refine the query.
  
   
