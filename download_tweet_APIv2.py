@@ -163,44 +163,49 @@ def execute_download(
     """
 
     ############## SET YOUR PARAMERTERS HERE ######################
-    query = "telemedicine  OR telehealth  OR telecare"
-    keywords = ' OR '.join(["suicide",
-                       "suicidal",
-                       "shoot myself",
-                       "a gun to head",
-                       "hang myself",
-                       "intention to die",
-                       "hurt myself",
-                       "cut myself",
-                       "leave this world",
-                       "wanna die",
-                       "deserve to die",
-                       "desire to end own life",
-                       "kill myself",
-                       "self harm",
-                       "want death",
-                       "take my life",
-                       "depression",
-                       "want to die",
-                       ])     # Found 77058632 tweets for query
-
-    query = f"({keywords}) place_country:US " # Found 306438 tweets for query:
+    # query = "telemedicine  OR telehealth  OR telecare"
+    # keywords = ' OR '.join(["suicide",
+    #                    "suicidal",
+    #                    "shoot myself",
+    #                    "a gun to head",
+    #                    "hang myself",
+    #                    "intention to die",
+    #                    "hurt myself",
+    #                    "cut myself",
+    #                    "leave this world",
+    #                    "wanna die",
+    #                    "deserve to die",
+    #                    "desire to end own life",
+    #                    "kill myself",
+    #                    "self harm",
+    #                    "want death",
+    #                    "take my life",
+    #                    "depression",
+    #                    "want to die",
+    #                    ])     # Found 77058632 tweets for query
+    # query = f"({keywords}) place_country:US " # Found 306438 tweets for query:
 
     # query = f"({keywords}) place_country:US has:geo"  # Found 306440 tweets for query:
     # NOTE: () is required!
 
+    # query = '#mangrove OR #mangroves'   #  Found 142011 tweets for query: #mangrove OR #mangroves. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    # query = 'mangrove OR mangroves'   # Found 1435688 tweets for query: mangrove OR mangroves. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    # query = 'mangrove'    # Found 943147 tweets for query: mangrove. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    # query = 'mangroves'   # Found 594896 tweets for query: mangroves. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    # query = '(#mangrove OR #mangroves)'  # Found 142003 tweets for query: (#mangrove OR #mangroves). Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    query = 'place_country:UA'  # Found 142003 tweets for query: (#mangrove OR #mangroves). Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
 
-    # start_time = "2020-12-05T09:25:03Z"
-    start_time = "2020-01-01T00:00:00Z"
-    end_time   = "2021-01-01T00:00:00Z"
+# start_time = "2020-12-05T09:25:03Z"
+    start_time = "2022-01-01T00:00:00Z"
+    end_time   = "2022-03-08T00:00:00Z"
     # end_time   = "2021-12-01T00:00:00.000Z"
     # end_time = "2021-07-17T04_51_53.000Z".replace("_", ":")
 
     max_results = 500  # max_results can be 500 if do not request the field: context_annotations
-    chunk_size = 500000  # tweets
+    chunk_size = 10000  # tweets
 
     # Set the save path
-    saved_path = r"downloaded_tweets_suicide_2020"
+    saved_path = r"downloaded_tweets_Ukraine_20220101_20220307"
     ###############################################################
 
 
