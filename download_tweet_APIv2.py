@@ -95,10 +95,12 @@ def get_tweet_count(query, start_time, end_time, granularity='day', next_token=N
 
     start_timer = time.perf_counter()
     while next_token is not None:
-
+        json_response = ''
         try:
             json_response = helper.connect_to_endpoint(endpoint, headers, query_params)
             is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
+            if is_too_many:
+                continue
             next_token = json_response['meta'].get('next_token', None)
             query_params['next_token'] = next_token
             tweet_count = json_response['meta']['total_tweet_count']
@@ -148,27 +150,65 @@ def convert_to_cluster_process(all_df, new_name):
 
 def download_Ukraine():
 
-    feb_users_list = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_users.csv')['userid'].to_list()
+    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_users.csv')
+    user_df['id_len'] = user_df['userid'].astype(str).str.len()
+    user_df = user_df.sort_values('id_len')
+    user_df['userid'] = user_df['userid'].astype(str)
+    users_list = user_df['userid'].to_list()
 
-    for idx, user_id in enumerate(feb_users_list):
+    query_len_cap = 1023
 
-        logger.info(f"Processing: {idx + 1} / {len(feb_users_list)}: user_id: {user_id}")
+    last_id = '2202066812'   # last_id = -1, if from the begining.
+    # for idx, user_id in enumerate(feb_users_list):
+    processed_cnt = 0
 
-        query = f'from:{user_id} has:geo'
-        start_time = "2022-02-19T00:00:00Z"
+
+    if last_id != -1:
+        processed_id = users_list.pop(0)
+        while processed_id != last_id:
+            processed_id = users_list.pop(0)
+    all_user_cnt = len(users_list)
+
+    while len(users_list) > 0:
+
+        user_id = users_list.pop(0)
+        processed_cnt += 1
+
+
+
+        current_user_id_len = len(user_id)
+        # query = f'has:geo from:{user_id}'
+        user_id_list = f"from:{user_id}"
+
+        added_id_len = 0
+        while (len(user_id_list) + added_id_len + len('has:geo () OR from:')) < query_len_cap:
+            if len(users_list) > 0:
+                added_id_len = len(users_list[0])
+                added_user_id = users_list.pop(0)
+            processed_cnt += 1
+            user_id_list = f"{user_id_list} OR from:{added_user_id}"
+
+        query = f'has:geo ({user_id_list})'
+
+        print("Query length:",len(query))
+
+
+        start_time = "2021-01-01T00:00:00Z"
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        end_time ="2022-03-09T00:00:00Z"
+        end_time ="2022-03-12T00:00:00Z"
 
-        saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220219_20220309"
+        saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20210101_20220312"
 
         execute_download(query,
                          start_time=start_time,
                          end_time=end_time,
-                         chunk_size=10000,
+                         chunk_size=100000,
                          max_results=500,  # max_results can be 500 if do not request the field: context_annotations
                          saved_path=saved_path,
                          is_zipped=False,
                          )
+
+        logger.info(f"Processed: {processed_cnt} / {all_user_cnt}.")
 
 
 def execute_download(query,
@@ -290,14 +330,17 @@ def execute_download(query,
         try:
             #
             json_response = helper.connect_to_endpoint(search_url, headers, query_params)
+            is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
+            if is_too_many: # if request too many times, wait for 1 minute.
+                continue
             # needs about 2 - 3 seconds. Hard to accelerate.
             # print("response time (second): ", time.perf_counter() - t1)
 
             next_token = json_response['meta'].get('next_token', "")
             query_params.update({"next_token": next_token})
 
-            # if request too many times, wait for 1 minute.
-            is_too_many, elapsed_time = helper.is_too_many_requests(json_response, start_timer)
+
+
 
             # save the raw data of each page (0.3 seconds per response)
             data_filename = save_search(json_response, saved_path)

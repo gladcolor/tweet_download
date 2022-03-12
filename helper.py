@@ -76,8 +76,8 @@ def is_too_many_requests(json_response, start_time):
     is_too_many = False
     now = time.perf_counter()
     elapsed_time = now - start_time
-    time_window = 15 * 60  # seconds, 15 min
-    time_window = 2 * 60  # seconds, 15 min
+    # time_window = 15 * 60  # seconds, 15 min
+    time_window = 2 * 60  # seconds, 2 min
     title = json_response.get('title', "")
     if title == 'Too Many Requests':
         is_too_many = True
