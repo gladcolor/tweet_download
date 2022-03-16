@@ -201,7 +201,8 @@ def download_Ukraine():
         start_time = "2022-03-12T00:00:00Z"
         end_time   = "2022-03-14T00:00:00Z"
 
-        saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+        # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+        saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220312_20220314"
 
         execute_download(query,
                          start_time=start_time,
@@ -213,6 +214,30 @@ def download_Ukraine():
                          )
 
         logger.info(f"Processed: {processed_cnt} / {all_user_cnt}.")
+
+
+def download_country_tweet():
+    start_time = "2022-03-08T00:00:00Z"
+    end_time = "2022-03-16T00:00:00Z"
+    # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+    saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220308_20220316"
+
+    query = f'place_country:UA'
+
+    # start_time = "2022-01-01T00:00:00Z"
+    # end_time =   "2022-03-08T00:00:00Z"
+    # expected_tweet_count_total = get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None)
+    # print(f"\nFound {expected_tweet_count_total} tweets for query: {query}. Period: {start_time} - {end_time}\n")
+    # Found 276303 tweets for query: place_country:UA. Period: 2022-01-01T00:00:00Z - 2022-03-08T00:00:00Z
+
+    execute_download(query,
+                     start_time=start_time,
+                     end_time=end_time,
+                     chunk_size=100000,
+                     max_results=500,  # max_results can be 500 if do not request the field: context_annotations
+                     saved_path=saved_path,
+                     is_zipped=False,
+                     )
 
 
 def execute_download(query,
@@ -724,7 +749,8 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    download_Ukraine()
+    # download_Ukraine()
+    download_country_tweet()
     # data_filename_list = list(range(10))
     # merged_df_list = []
     # save_path = "test"
