@@ -158,7 +158,8 @@ def download_Ukraine():
 
     query_len_cap = 1023
 
-    last_id = '2202066812'   # last_id = -1, if from the begining.
+    # last_id = '2202066812'   # last_id = -1, if from the begining.
+    last_id = -1
     # for idx, user_id in enumerate(feb_users_list):
     processed_cnt = 0
 
@@ -193,11 +194,14 @@ def download_Ukraine():
         print("Query length:",len(query))
 
 
-        start_time = "2021-01-01T00:00:00Z"
+        # start_time = "2021-01-01T00:00:00Z"
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        end_time ="2022-03-12T00:00:00Z"
+        # end_time ="2022-03-12T00:00:00Z"
 
-        saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20210101_20220312"
+        start_time = "2022-03-12T00:00:00Z"
+        end_time   = "2022-03-14T00:00:00Z"
+
+        saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
 
         execute_download(query,
                          start_time=start_time,
@@ -497,7 +501,7 @@ def execute_download0(
     # query = 'mangrove'    # Found 943147 tweets for query: mangrove. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
     # query = 'mangroves'   # Found 594896 tweets for query: mangroves. Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
     # query = '(#mangrove OR #mangroves)'  # Found 142003 tweets for query: (#mangrove OR #mangroves). Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
-    query = 'place_country:UA'  # Found 142003 tweets for query: (#mangrove OR #mangroves). Period: 2019-01-01T00:00:00Z - 2022-01-01T00:00:00Z
+    query = 'place_country:UA'
 
 # start_time = "2020-12-05T09:25:03Z"
     start_time = "2019-01-01T00:00:00Z"

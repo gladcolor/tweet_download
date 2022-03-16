@@ -286,7 +286,8 @@ def merge_a_response(data_file_name, save_path=""):
             df_users = df_users[df_users['id'] != '']
             df_users['id'] = df_users['id'].astype(str)
             df_users = df_users[df_users['id'].str.isnumeric()]
-            df_users["description"] = df_users["description"].str.replace("\n", " ")
+            # df_users["description"] = df_users["description"].str.replace("\n", " ").replace("\n", " ").replace("\n", " ").replace("\r", " ").strip()
+            df_users["description"] = df_users["description"].str.replace("\t", " ").replace("\b", " ").replace("\n", " ").replace("\r", " ").strip()
             # df_users["id"] = df_users["id"].astype(int)  # there may be some error rows such as the empyty id
 
             new_column_name = {name: "users_table_" + name for name in df_users.columns}
@@ -661,7 +662,7 @@ def get_userVerified(row):
 def get_userDescription(row):
     try:
         author = ast.literal_eval(row['author'])
-        userDescription = author['description'].replace(",", ";").replace('\r', '').replace('\n', ' ').strip()
+        userDescription = author['description'].replace(",", ";").replace('\r', ' ').replace('\n', ' ').replace("\r", " ").strip()
     except:
         userDescription = ''
     return userDescription
