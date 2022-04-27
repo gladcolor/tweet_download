@@ -75,7 +75,12 @@ def save_search(json_response,
         logger.error(e, exc_info=True)
 
 
-def get_tweet_count(query, start_time, end_time, granularity='day', next_token=None, until_id=None):
+def get_tweet_count(query='place_country:UA',
+                    start_time="2021-02-24T00:00:00Z",
+                    end_time  ="2022-04-08T00:00:00Z",
+                    granularity='day',
+                    next_token=None,
+                    until_id=None):
     logger.info("Counting tweets, please wait...")
 
     tweet_count_total = 0
@@ -148,9 +153,9 @@ def convert_to_cluster_process(all_df, new_name):
     logger.info("PID %s convert_to_cluster_process() end!" % os.getpid())
 
 
-def download_Ukraine():
+def download_user_tweets():
 
-    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_users.csv')
+    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
     user_df['id_len'] = user_df['userid'].astype(str).str.len()
     user_df = user_df.sort_values('id_len')
     user_df['userid'] = user_df['userid'].astype(str)
@@ -175,8 +180,6 @@ def download_Ukraine():
         user_id = users_list.pop(0)
         processed_cnt += 1
 
-
-
         current_user_id_len = len(user_id)
         # query = f'has:geo from:{user_id}'
         user_id_list = f"from:{user_id}"
@@ -198,16 +201,17 @@ def download_Ukraine():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2022-03-12T00:00:00Z"
-        end_time   = "2022-03-14T00:00:00Z"
+        start_time = "2022-04-08T00:00:00Z"
+        end_time   = "2022-04-21T00:00:00Z"
 
         # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-        saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220312_20220314"
+        # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
+        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220408_20220420"
 
         execute_download(query,
                          start_time=start_time,
                          end_time=end_time,
-                         chunk_size=100000,
+                         chunk_size=10000,
                          max_results=500,  # max_results can be 500 if do not request the field: context_annotations
                          saved_path=saved_path,
                          is_zipped=False,
@@ -217,10 +221,10 @@ def download_Ukraine():
 
 
 def download_country_tweet():
-    start_time = "2022-03-08T00:00:00Z"
-    end_time = "2022-03-16T00:00:00Z"
+    end_time = "2022-04-21T00:00:00Z"
+    start_time = "2022-04-08T00:00:00Z"
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-    saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220308_20220316"
+    saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220408_20220420"
 
     query = f'place_country:UA'
 
@@ -233,7 +237,7 @@ def download_country_tweet():
     execute_download(query,
                      start_time=start_time,
                      end_time=end_time,
-                     chunk_size=100000,
+                     chunk_size=10000,
                      max_results=500,  # max_results can be 500 if do not request the field: context_annotations
                      saved_path=saved_path,
                      is_zipped=False,
@@ -749,9 +753,11 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    # download_Ukraine()
     download_country_tweet()
+    download_user_tweets()
+
     # data_filename_list = list(range(10))
+    # print(get_tweet_count())
     # merged_df_list = []
     # save_path = "test"
     # merge_a_response_list(data_filename_list, merged_df_list, save_path)
