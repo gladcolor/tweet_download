@@ -751,7 +751,7 @@ def clean_twts(tw):  # input is a string
     tw = re.sub(pattern, "", tw)
 
   # remove @
-    pattern = '@[a-zA-Z0-9_]+ '
+    pattern = '@[a-zA-Z0-9_]+'
     tw = re.sub(pattern, "", tw)
 
   # remove emojis

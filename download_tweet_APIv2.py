@@ -153,6 +153,63 @@ def convert_to_cluster_process(all_df, new_name):
     logger.info("PID %s convert_to_cluster_process() end!" % os.getpid())
 
 
+def download_single_user_tweets():
+
+
+    # user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
+    csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    user_df = pd.concat([pd.read_csv(f) for f in csv_files])
+    user_df['id_len'] = user_df['userid'].astype(str).str.len()
+    user_df = user_df.sort_values('id_len')
+    user_df['userid'] = user_df['userid'].astype(str)
+    users_list = user_df['userid'].to_list()
+
+    query_len_cap = 1023
+
+    # last_id = '2202066812'   # last_id = -1, if from the begining.
+    last_id = -1
+    # for idx, user_id in enumerate(feb_users_list):
+    processed_cnt = 0
+
+
+    if last_id != -1:
+        processed_id = users_list.pop(0)
+        while processed_id != last_id:
+            processed_id = users_list.pop(0)
+    all_user_cnt = len(users_list)
+
+    while len(users_list) > 0:
+
+        user_id = users_list.pop(0)
+
+        processed_cnt += 1
+
+        print("Processing userid: ", user_id)
+        print(f"Processing: {processed_cnt} / {all_user_cnt}.")
+
+
+
+
+        query = f'from:{user_id}'
+
+        start_time = "2019-01-01T00:00:00Z"
+        end_time   = "2021-01-01T00:00:00Z"
+
+        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group2"
+        saved_path = os.path.join(saved_path, user_id)
+        os.makedirs(saved_path, exist_ok=True)
+
+        execute_download(query,
+                         start_time=start_time,
+                         end_time=end_time,
+                         chunk_size=10000,
+                         max_results=500,  # max_results can be 500 if do not request the field: context_annotations
+                         saved_path=saved_path,
+                         is_zipped=False,
+                         )
+
+        logger.info(f"Processed: {processed_cnt} / {all_user_cnt}.")
+
 def download_user_tweets():
 
 
@@ -223,7 +280,7 @@ def download_user_tweets():
 
         # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
         # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group"
+        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group2"
 
         execute_download(query,
                          start_time=start_time,
@@ -771,7 +828,8 @@ access_token_secret = tokens[4]
 if __name__ == '__main__':
     # execute_download()
     # download_country_tweet()
-    download_user_tweets()
+    # download_user_tweets()
+    download_single_user_tweets()
 
     # data_filename_list = list(range(10))
     # print(get_tweet_count())
