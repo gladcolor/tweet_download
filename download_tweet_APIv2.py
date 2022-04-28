@@ -155,7 +155,10 @@ def convert_to_cluster_process(all_df, new_name):
 
 def download_user_tweets():
 
-    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
+
+    # user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
+    csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    user_df = pd.concat([pd.read_csv(f) for f in csv_files])
     user_df['id_len'] = user_df['userid'].astype(str).str.len()
     user_df = user_df.sort_values('id_len')
     user_df['userid'] = user_df['userid'].astype(str)
@@ -182,17 +185,31 @@ def download_user_tweets():
 
         current_user_id_len = len(user_id)
         # query = f'has:geo from:{user_id}'
-        user_id_list = f"from:{user_id}"
+
 
         added_id_len = 0
-        while (len(user_id_list) + added_id_len + len('has:geo () OR from:')) < query_len_cap:
+        # Has geo
+        # user_id_list = f"has:geo from:{user_id}"
+        # while (len(user_id_list) + added_id_len + len('has:geo () OR from:')) < query_len_cap:
+        #     if len(users_list) > 0:
+        #         added_id_len = len(users_list[0])
+        #         added_user_id = users_list.pop(0)
+        #     processed_cnt += 1
+        #     user_id_list = f"{user_id_list} OR from:{added_user_id}"
+        #
+        # query = f'has:geo ({user_id_list})'
+
+        # no geo
+        user_id_list = f"from:{user_id}"
+        while (len(user_id_list) + added_id_len + len(' OR from:')) < query_len_cap:
             if len(users_list) > 0:
                 added_id_len = len(users_list[0])
                 added_user_id = users_list.pop(0)
             processed_cnt += 1
             user_id_list = f"{user_id_list} OR from:{added_user_id}"
 
-        query = f'has:geo ({user_id_list})'
+        query = f'({user_id_list})'
+
 
         print("Query length:",len(query))
 
@@ -201,12 +218,12 @@ def download_user_tweets():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2022-04-08T00:00:00Z"
-        end_time   = "2022-04-21T00:00:00Z"
+        start_time = "2019-01-01T00:00:00Z"
+        end_time   = "2021-01-01T00:00:00Z"
 
         # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
         # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220408_20220420"
+        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group"
 
         execute_download(query,
                          start_time=start_time,
@@ -740,7 +757,7 @@ def execute_download0(
 
             continue
 
-token_path = r'tweet_api_keys.txt'
+token_path = r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\tweet_api_keys.txt'
 
 tokens = helper.get_api_token(token_path)
 
@@ -753,7 +770,7 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    download_country_tweet()
+    # download_country_tweet()
     download_user_tweets()
 
     # data_filename_list = list(range(10))

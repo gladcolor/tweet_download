@@ -755,7 +755,7 @@ def clean_twts(tw):  # input is a string
     tw = re.sub(pattern, "", tw)
 
   # remove emojis
-    tw = emoji.demojize(tw)
+  #   tw = emoji.demojize(tw)  # if put the emojis into VADER, the sentiment will be higher.
 
 
 
