@@ -15,6 +15,8 @@ import multiprocessing as mp
 import pandas as pd
 from datetime import datetime
 import helper
+
+import shutil
 from multiprocessing.connection import wait
 
 logger = helper.logger
@@ -157,7 +159,22 @@ def download_single_user_tweets():
 
 
     # user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
-    csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    csv_files = glob.glob(
+        r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\01_sampling2\Sampled_163user_1*.csv')
+
+    saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\random_group1"
+
+    start_time = "2019-01-01T00:00:00Z"
+    end_time = "2021-01-01T00:00:00Z"
+
+    # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+    # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
+
+
     user_df = pd.concat([pd.read_csv(f) for f in csv_files])
     user_df['id_len'] = user_df['userid'].astype(str).str.len()
     user_df = user_df.sort_values('id_len')
@@ -180,6 +197,8 @@ def download_single_user_tweets():
 
     while len(users_list) > 0:
 
+
+
         user_id = users_list.pop(0)
 
         processed_cnt += 1
@@ -188,25 +207,31 @@ def download_single_user_tweets():
         print(f"Processing: {processed_cnt} / {all_user_cnt}.")
 
 
+        query = f'from: {user_id}'
 
 
-        query = f'from:{user_id}'
-
-        start_time = "2019-01-01T00:00:00Z"
-        end_time   = "2021-01-01T00:00:00Z"
-
-        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group2"
-        saved_path = os.path.join(saved_path, user_id)
+        # saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group2"
+        single_saved_path = os.path.join(saved_path, user_id)
         os.makedirs(saved_path, exist_ok=True)
 
-        execute_download(query,
+        tweet_count_total = execute_download(query,
                          start_time=start_time,
                          end_time=end_time,
                          chunk_size=10000,
                          max_results=500,  # max_results can be 500 if do not request the field: context_annotations
-                         saved_path=saved_path,
+                         saved_path=single_saved_path,
                          is_zipped=False,
                          )
+
+        if tweet_count_total < 1:
+            logger.info(f"!!!  Note:  User {user_id} has no tweets !!!")
+            shutil.rmtree(single_saved_path)
+
+
+
+
+
+        logger.info(f"Downloaded {tweet_count_total}  tweets for user: {user_id}.")
 
         logger.info(f"Processed: {processed_cnt} / {all_user_cnt}.")
 
@@ -214,8 +239,20 @@ def download_user_tweets():
 
 
     # user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
-    csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    # csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\Covid19_users*.csv')
+    csv_files = glob.glob(r'E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\01_sampling2\Sampled_163user_1*.csv')
+
+    start_time = "2019-01-01T00:00:00Z"
+    end_time = "2021-01-01T00:00:00Z"
+
+    # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+    # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
+    saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\random_group1"
+
     user_df = pd.concat([pd.read_csv(f) for f in csv_files])
+
     user_df['id_len'] = user_df['userid'].astype(str).str.len()
     user_df = user_df.sort_values('id_len')
     user_df['userid'] = user_df['userid'].astype(str)
@@ -275,12 +312,7 @@ def download_user_tweets():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2019-01-01T00:00:00Z"
-        end_time   = "2021-01-01T00:00:00Z"
 
-        # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-        # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"E:\USC_OneDrive\OneDrive - University of South Carolina\GIBD\COVID_travel_distance\02_user_tweets\covid_group2"
 
         execute_download(query,
                          start_time=start_time,
@@ -340,6 +372,8 @@ def execute_download(query,
 
     rate limit: 520,000 tweet/hour (without context_annotation)
 
+    return: tweet_count_total
+
     """
 
 
@@ -355,6 +389,7 @@ def execute_download(query,
     else:
         suffix = '.csv'
 
+    tweet_count_total = 0
 
     raw_tweet_dir = os.path.join(saved_path, 'raw_tweets')
     line_tweet_dir = os.path.join(saved_path, 'line_tweets')
@@ -420,9 +455,9 @@ def execute_download(query,
 
     if expected_tweet_count_total == 0:
         logger.info("Exit: no tweets.")
-        return
+        return tweet_count_total
 
-    tweet_count_total = 0
+
 
     merge_file_count = round(chunk_size / max_results, 0)
     merge_file_count = int(merge_file_count)
@@ -539,7 +574,7 @@ def execute_download(query,
 
             if next_token == "":
                 print("No next page! Exit.")
-                return
+                return tweet_count_total
 
         except Exception as e:
             print(json_response)
@@ -553,6 +588,8 @@ def execute_download(query,
             time.sleep(time_window)
 
             continue
+
+    return tweet_count_total
 
 def execute_download0(
                     is_zipped=False,
