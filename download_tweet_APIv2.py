@@ -279,6 +279,8 @@ def download_user_tweets():
 
         current_user_id_len = len(user_id)
         # query = f'has:geo from:{user_id}'
+        print("Processing userid: ", user_id)
+        print(f"Processing: {processed_cnt} / {all_user_cnt}.")
 
 
         added_id_len = 0
@@ -865,8 +867,8 @@ access_token_secret = tokens[4]
 if __name__ == '__main__':
     # execute_download()
     # download_country_tweet()
-    # download_user_tweets()
-    download_single_user_tweets()
+    download_user_tweets()
+    # download_single_user_tweets()
 
     # data_filename_list = list(range(10))
     # print(get_tweet_count())
