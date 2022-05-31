@@ -753,7 +753,7 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    download_country_tweet()
+    # download_country_tweet()
     download_user_tweets()
 
     # data_filename_list = list(range(10))
