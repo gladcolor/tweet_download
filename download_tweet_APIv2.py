@@ -15,6 +15,8 @@ import multiprocessing as mp
 import pandas as pd
 from datetime import datetime
 import helper
+
+import shutil
 from multiprocessing.connection import wait
 
 logger = helper.logger
@@ -201,12 +203,12 @@ def download_user_tweets():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2022-04-21T00:00:00Z"
-        end_time   = "2022-05-30T00:00:00Z"
+        start_time = "2022-04-08T00:00:00Z"
+        end_time   = "2022-04-21T00:00:00Z"
 
         # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
         # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220421_20220529"
+        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220408_20220420"
 
         execute_download(query,
                          start_time=start_time,
@@ -479,6 +481,8 @@ def execute_download(query,
             time.sleep(time_window)
 
             continue
+
+    return tweet_count_total
 
 def execute_download0(
                     is_zipped=False,
@@ -753,7 +757,7 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    # download_country_tweet()
+    download_country_tweet()
     download_user_tweets()
 
     # data_filename_list = list(range(10))
