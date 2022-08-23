@@ -46,11 +46,14 @@ def save_search(json_response,
         df = helper.remove_newline_comma(df)
 
         df = df.sort_index(axis=1)
+        # df_no_empty_posttime = df.fillna("")
+        df_no_empty_posttime = df.dropna(subset=['created_at'])
 
         # basename = f"{meta['oldest_id']}_{meta['newest_id']}_{meta['result_count']}"  # use tweet_id as basename
-        lastest_time =  df.iloc[0]['created_at'].replace(":", "_")
-        oldest_time =  df.iloc[-1]['created_at'].replace(":", "_")
+        lastest_time =  df_no_empty_posttime.iloc[0]['created_at'].replace(":", "_")
+        oldest_time =  df_no_empty_posttime.iloc[-1]['created_at'].replace(":", "_")
         basename = f"{oldest_time}_{lastest_time}_{meta['result_count']}"  # use tweet time as basename
+        response_tw_cnt = int(meta['result_count']) # the tweet count of this response
 
         data_filename = os.path.join(raw_tweets_dir, basename + f"_data{suffix}")
 
@@ -71,7 +74,7 @@ def save_search(json_response,
         if 'users' not in list(includes.keys()):
             print("Not users table!")
 
-        return data_filename
+        return data_filename, response_tw_cnt
 
     except Exception as e:
         logger.error(e, exc_info=True)
@@ -124,9 +127,9 @@ def get_tweet_count(query='place_country:UA',
 
     return tweet_count_total  # , json_response
 
-def merge_a_response_list(data_filename_list, merged_df_list, save_path):
+def merge_a_response_list(data_filename_list, merged_df_list, save_path, merged_tweet_cnt):
     logger.info("PID %s merge_a_response_list() start!" % os.getpid())
-
+    # assert isinstance(merged_tweet_cnt, int), "merge_a_response_list(): merged_tweet_cnt should be int."
     #
     # print("len(data_filename_list): ", len(data_filename_list))
     # print("len(data_filename_list): ", len(data_filename_list))
@@ -137,6 +140,7 @@ def merge_a_response_list(data_filename_list, merged_df_list, save_path):
         try:
             logger.info("PID %s Merging %s" % (os.getpid(), data_filename))
             df_merged = helper.merge_a_response(data_filename, save_path=save_path)
+            merged_tweet_cnt.value += len(df_merged)
             merged_df_list.append(df_merged)
         except Exception as e:
             logger.error(f"{e}, {data_filename}", exc_info=True)
@@ -156,8 +160,14 @@ def convert_to_cluster_process(all_df, new_name):
 
 
 def download_user_tweets():
+    start_time = "2021-02-24T00:00:00Z"
+    end_time   = "2022-02-24T00:00:00Z"
 
-    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
+    # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
+    # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
+    saved_path = r"K:\Research\Ukraine_tweets\Previous365days_User_tweets_20210224_20220224_without_context_annotation"
+    # user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\2021_2022_users.csv')
+    user_df = pd.read_csv(r'K:\Research\Ukraine_tweets\userid_20210224_20220224.csv')#.iloc[-100:-10]
     user_df['id_len'] = user_df['userid'].astype(str).str.len()
     user_df = user_df.sort_values('id_len')
     user_df['userid'] = user_df['userid'].astype(str)
@@ -191,7 +201,7 @@ def download_user_tweets():
             if len(users_list) > 0:
                 added_id_len = len(users_list[0])
                 added_user_id = users_list.pop(0)
-            processed_cnt += 1
+                processed_cnt += 1
             user_id_list = f"{user_id_list} OR from:{added_user_id}"
 
         query = f'has:geo ({user_id_list})'
@@ -203,12 +213,6 @@ def download_user_tweets():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2022-04-21T00:00:00Z"
-        end_time   = "2022-08-03T00:00:00Z"
-
-        # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-        # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220421_20220803"
 
         execute_download(query,
                          start_time=start_time,
@@ -219,7 +223,7 @@ def download_user_tweets():
                          is_zipped=False,
                          )
 
-        logger.info(f"Processed: {processed_cnt} / {all_user_cnt}.")
+        logger.info(f"Processed user count: {processed_cnt} / {all_user_cnt}.")
 
 
 def download_country_tweet():
@@ -294,8 +298,8 @@ def execute_download(query,
     os.makedirs(cluster_csvs_dir, exist_ok=True)
 
 
-    # has_context_annotations = False
-    has_context_annotations = True
+    has_context_annotations = False
+    # has_context_annotations = True
 
     # since_id = "139819805172285849"  # cannot used with start/end_time!
     # until_id = '1139156316075757568'
@@ -354,6 +358,11 @@ def execute_download(query,
     tweet_count_total = 0
 
     merge_file_count = round(chunk_size / max_results, 0)
+    chunk_tweet_cnt = 0 #  count of the downloaded tweets in this chunk.
+
+    merged_tweet_cnt_mp = mp.Manager().Value('i', 0)
+    # may need a lock.
+
     merge_file_count = int(merge_file_count)
 
     data_filename_list_mp = mp.Manager().list()
@@ -376,12 +385,12 @@ def execute_download(query,
             query_params.update({"next_token": next_token})
 
 
-
-
             # save the raw data of each page (0.3 seconds per response)
-            data_filename = save_search(json_response, saved_path)
+            data_filename, response_tw_cnt = save_search(json_response, saved_path)
+            # response_tw_cnt: the tweet count of this response
+            chunk_tweet_cnt += response_tw_cnt
 
-
+            tweet_count_total += response_tw_cnt
             # t2 = time.perf_counter()
             data_filename_list_mp.append(data_filename)  # put the name of the saved file to a list for further merging.
             # _mp means it is a shared list for multiprocessing.
@@ -394,38 +403,54 @@ def execute_download(query,
             total += int(json_response['meta']['result_count'])
             logger.info("Downloaded %s tweets in total." % total)
 
-            tweet_count_total += max_results
+            if next_token == "":
+                print("next_token is null! Current tweets search is ended.")
+                merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, merged_tweet_cnt_mp)
+                speed = tweet_count_total / (time.perf_counter() - t0) * 3600  # per hour
+                logger.info("Speed: %.0f tweet/hour" % speed)
 
-            if len(data_filename_list_mp) > 5 or next_token == "":
+            if len(data_filename_list_mp) >= min(merge_file_count, 5) or next_token == "":
                 # 2) use a sub-process to merge the five parts of tweets data (1.4 seconds per response, paralleling with the main process);
                 # merge the five parts of a response in data_filename_list_mp, then put the result into merged_df_list_mp
                 # the merge file is stored in folder: line_tweet_dir
                 merge_process = mp.Process(target=merge_a_response_list,
-                                           args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
+                                           args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, merged_tweet_cnt_mp))
                 merge_process.start()
+                # if next_token == "":
+                merge_process.join()
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600  # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed)
 
             # print("merge time (second): ", time.perf_counter() - t2)
             # Merging time is about 1.4 seconds .
 
+            # tweet_count_total += chunk_tweet_cnt
+
             # print("request and merge time (second): ", time.perf_counter() - t1)  # < 3.0 seconds using multi-processing
 
 
-            if len(merged_df_list_mp) >= merge_file_count or next_token == "":
+
+            # make a chunk
+            if merged_tweet_cnt_mp.value >= chunk_size or next_token == "":
+            # if len(merged_df_list_mp) >= merge_file_count or next_token == "":
                 # use a sub-process to merge several response CSV files to a chunk and to convert the chunk to cluster format.
                 logger.info("Merging a tweets chuck...")
                 logger.info("data_filename_list_mp lengh: %d" % len(data_filename_list_mp))
                 logger.info("merged_df_list lengh: %d" % len(merged_df_list_mp))
+                logger.info("Tweet count in this chunk: %d" % chunk_tweet_cnt)
                 if next_token == "":  # the last several response, not enough for the merge_file_count
-                    merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir)
+                    merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, merged_tweet_cnt_mp)
                     # df_all = pd.concat(merged_df_list)
 
                 merged_df_list = []  # 3) make a chunk in the main process
                 # pop  merged_df from merged_df_list_mp until the number is up to merge_file_count
-                for i in range(int(merge_file_count)):
+                for i in range(min(len(merged_df_list_mp), merge_file_count)):
                     if len(merged_df_list_mp) > 0:
                         merged_df_list.append(merged_df_list_mp.pop(0))
+                # if len(merged_df_list_mp) > 0:
+                #     merged_df_list.append(merged_df_list_mp.pop(0))
+
+
 
                 if len(merged_df_list) == 0:
                     logger.info("No tweets return")
@@ -438,14 +463,16 @@ def execute_download(query,
                     # logger.info("Waiting for merging responses: %d left." % len(data_filename_list_mp))
                     # merge_process.wait()
                 # wait(merged_df_list_mp)
-
-                lastest_time = df_all['created_at'].max().replace(":", "_")
-                oldest_time  = df_all['created_at'].min().replace(":", "_")
+                df_all_no_empty_posttime = df_all.dropna(subset=['created_at'])
+                lastest_time = df_all_no_empty_posttime['created_at'].max().replace(":", "_")
+                oldest_time  = df_all_no_empty_posttime['created_at'].min().replace(":", "_")
                 base_name = f"{oldest_time}_{lastest_time}_{len(df_all)}"  # use tweet time as basename
                 new_name = os.path.join(chunks_dir, base_name + f"{suffix}")
                 df_all = df_all.sort_index(axis=1)
 
                 df_all.to_csv(new_name, index=False)
+
+                merged_tweet_cnt_mp.value = 0
 
                 logger.info("Finished merging a tweets chuck at: %s" % new_name)
 
@@ -458,8 +485,9 @@ def execute_download(query,
                 convert_process = mp.Process(target=convert_to_cluster_process,
                                            args=(df_all,  new_name))
                 convert_process.start()
-                if next_token == "":
-                    convert_process.join()  # the main process will wait for the sub-process
+                # if next_token == "":
+                convert_process.join()  # the main process will wait for the sub-process
+                    # merge_process.join()
                 # df_all_cluster = converted_df_list[0]
                 # df_all_cluster = helper.convert_to_cluster(df_all)
 
@@ -471,7 +499,7 @@ def execute_download(query,
                 return
 
         except Exception as e:
-            print(json_response)
+            print(str(json_response)[:1000])
             logger.error(e, exc_info=True)
             print(e)
             now = time.perf_counter()
@@ -759,8 +787,8 @@ access_token_secret = tokens[4]
 
 if __name__ == '__main__':
     # execute_download()
-    download_country_tweet()
-    # download_user_tweets()
+    # download_country_tweet()
+    download_user_tweets()
 
     # data_filename_list = list(range(10))
     # print(get_tweet_count())
