@@ -203,12 +203,12 @@ def download_user_tweets():
         # end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         # end_time ="2022-03-12T00:00:00Z"
 
-        start_time = "2022-04-08T00:00:00Z"
-        end_time   = "2022-04-21T00:00:00Z"
+        start_time = "2022-04-21T00:00:00Z"
+        end_time   = "2022-08-03T00:00:00Z"
 
         # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
         # saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220314_20220323"
-        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220408_20220420"
+        saved_path = r"K:\Research\Ukraine_tweets\2021_2022_User_tweets_20220421_20220803"
 
         execute_download(query,
                          start_time=start_time,
@@ -223,10 +223,10 @@ def download_user_tweets():
 
 
 def download_country_tweet():
-    end_time = "2022-05-30T00:00:00Z"
-    start_time = "2022-04-21T00:00:00Z"
+    end_time = "2022-08-21T00:00:00Z"
+    start_time = "2022-02-24T00:00:00Z"
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-    saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220421_20220529"
+    saved_path = r"K:\Research\Ukraine_tweets\Tweets_Ukraine_20220224_20220821_with_context_annotation"
 
     query = f'place_country:UA'
 
@@ -294,7 +294,8 @@ def execute_download(query,
     os.makedirs(cluster_csvs_dir, exist_ok=True)
 
 
-    has_context_annotations = False
+    # has_context_annotations = False
+    has_context_annotations = True
 
     # since_id = "139819805172285849"  # cannot used with start/end_time!
     # until_id = '1139156316075757568'
@@ -313,10 +314,10 @@ def execute_download(query,
                     "max_results": str(max_results), \
                     'expansions': 'attachments.poll_ids,attachments.media_keys,author_id,entities.mentions.username,geo.place_id,in_reply_to_user_id,referenced_tweets.id,referenced_tweets.id.author_id', \
  \
-                    # HAVE context_annotations, max_results can be only 100
+                    # HAVE context_annotations field, max_results can be only 100
                     #'tweet.fields': 'attachments,author_id,context_annotations,conversation_id,created_at,entities,geo,id,in_reply_to_user_id,lang,public_metrics,possibly_sensitive,referenced_tweets,reply_settings,source,text,withheld', \
 
-                    # NO context_annotations,  max_results can be 500
+                    # NO context_annotations field,  max_results can be 500
                     'tweet.fields': 'attachments,author_id,conversation_id,created_at,entities,geo,id,in_reply_to_user_id,lang,public_metrics,possibly_sensitive,referenced_tweets,reply_settings,source,text,withheld', \
 
                     'place.fields': 'contained_within,country,country_code,full_name,geo,id,name,place_type', \
@@ -338,7 +339,7 @@ def execute_download(query,
         if max_results > 100:
             print(f"max_results has set to 100 when requesting context_annotations. ")
             max_results = 100
-            query_params['query'] = max_results
+            query_params['max_results'] = max_results
 
     logger.info("PID %s execute_download() start!" % os.getpid())
 
@@ -568,7 +569,8 @@ def execute_download0(
     os.makedirs(cluster_csvs_dir, exist_ok=True)
 
 
-    has_context_annotations = False
+    # has_context_annotations = False
+    has_context_annotations = True
 
     # since_id = "139819805172285849"  # cannot used with start/end_time!
     # until_id = '1139156316075757568'
@@ -758,7 +760,7 @@ access_token_secret = tokens[4]
 if __name__ == '__main__':
     # execute_download()
     download_country_tweet()
-    download_user_tweets()
+    # download_user_tweets()
 
     # data_filename_list = list(range(10))
     # print(get_tweet_count())
