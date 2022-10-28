@@ -1,3 +1,5 @@
+# coding: utf8
+
 import os
 import glob
 import logging
@@ -21,6 +23,7 @@ from multiprocessing.connection import wait
 
 logger = helper.logger
 json_response_list = [] # a global variable to store the returned tweet. Will be emptied periodically
+
 
 def save_search(json_response,
                 saved_path,
@@ -223,10 +226,10 @@ def download_user_tweets():
 
 
 def download_country_tweet():
-    start_time = "2020-01-01T00:00:00Z"
-    end_time   = "2021-01-01T00:00:00Z"
+    start_time = "2016-01-01T00:00:00Z"
+    end_time   = "2017-01-01T00:00:00Z"
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-    saved_path = f"/content/drive/Shareddrives/T5/Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
+    saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # saved_path = f"/content/drive/Shareddrives/T5/Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # Found 68767886 tweets for JP in 2021
 
@@ -444,6 +447,7 @@ def execute_download(query,
                 # merge_process.wait()
                 # wait(merged_df_list_mp)
 
+                df_all = df_all[df_all['created_at'].str.len() > 10]  # remove tweet without post time
                 lastest_time = df_all['created_at'].max().replace(":", "_")
                 oldest_time  = df_all['created_at'].min().replace(":", "_")
                 base_name = f"{oldest_time}_{lastest_time}_{len(df_all)}"  # use tweet time as basename
