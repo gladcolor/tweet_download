@@ -127,7 +127,7 @@ def get_tweet_count(query='place_country:UA',
 
     return tweet_count_total  # , json_response
 
-def merge_a_response_list(data_filename_list, merged_df_list, save_path):
+def merge_a_response_list(data_filename_list, merged_df_list, save_path, to_delete):
     logger.info("PID %s merge_a_response_list() start!" % os.getpid())
 
     #
@@ -136,6 +136,7 @@ def merge_a_response_list(data_filename_list, merged_df_list, save_path):
     while len(data_filename_list) > 0:
         # print("len(data_filename_list): ", len(data_filename_list))
         data_filename = data_filename_list.pop(0)
+        to_delete.append(data_filename)
         # time.sleep(1)
         try:
             logger.info("PID %s Merging %s" % (os.getpid(), data_filename))
@@ -226,8 +227,8 @@ def download_user_tweets():
 
 
 def download_country_tweet():
-    start_time = "2016-01-01T00:00:00Z"
-    end_time   = "2017-01-01T00:00:00Z"
+    start_time = "2019-01-01T00:00:00Z"
+    end_time   = "2020-01-01T00:00:00Z"
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
     saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # saved_path = f"/content/drive/Shareddrives/T5/Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
@@ -258,6 +259,7 @@ def execute_download(query,
                      max_results=500,  # max_results can be 500 if do not request the field: context_annotations
                      saved_path=r"downloaded_tweets_Ukraine_20190101_20211231",
                      is_zipped=False,
+                     delete=True,
                      ):
     """":argument
 
@@ -408,8 +410,9 @@ def execute_download(query,
                 # 2) use a sub-process to merge the five parts of tweets data (1.4 seconds per response, paralleling with the main process);
                 # merge the five parts of a response in data_filename_list_mp, then put the result into merged_df_list_mp
                 # the merge file is stored in folder: line_tweet_dir
+                to_delete_mp = mp.Manager().list()
                 merge_process = mp.Process(target=merge_a_response_list,
-                                           args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir))
+                                           args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, to_delete))
                 merge_process.start()
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600  # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed)
@@ -455,6 +458,9 @@ def execute_download(query,
                 df_all = df_all.sort_index(axis=1)
 
                 df_all.to_csv(new_name, index=False)
+                if delete:
+                    for f in to_delete_mp:
+                        os.remove(f)
 
                 logger.info("Finished merging a tweets chuck at: %s" % new_name)
 

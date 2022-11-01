@@ -2,3 +2,4 @@ API_Keys/tweet_api_keys.txt
 API_Keys/
 tweet_api_keys.txt
 .idea/
+*.log

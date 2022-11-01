@@ -225,10 +225,12 @@ def get_lonlat(row):
     return row
 
 
-def merge_a_response(data_file_name, save_path=""):
+def merge_a_response(data_file_name, save_path="", delete=True):
     try:
+        to_delete = []
         d = data_file_name   # data csv file
         df_data = pd.read_csv(d, engine='python')
+        to_delete.append(data_file_name)
         # print(d)
         df_data = df_data.fillna("")
         df_data = refine_data(df_data)
@@ -244,6 +246,7 @@ def merge_a_response(data_file_name, save_path=""):
         places_csv = d.replace("data.csv", "includes_places.csv")
         if os.path.exists(places_csv):
             df_places = pd.read_csv(places_csv, engine='python').fillna("")
+            to_delete.append(places_csv)
         else:
             df_places = pd.DataFrame(columns=['country', 'country_code', 'full_name', 'geo', 'id', 'name', 'place_type'])
         new_column_name = {name: "places_table_" + name for name in df_places.columns}
@@ -262,6 +265,8 @@ def merge_a_response(data_file_name, save_path=""):
         if os.path.exists(tweets_csv):
             df_tweets = pd.read_csv(tweets_csv, engine='python').fillna("")
             df_tweets["text"] = df_tweets["text"].str.replace("\n", " ")
+            to_delete.append(tweets_csv)
+
             if 'in_reply_to_user_id' not in df_tweets.columns:
                 df_tweets['in_reply_to_user_id'] = ''
                 logger.warning("Found no in_reply_to_user_id column in the returned includes_tweets.")
@@ -282,6 +287,7 @@ def merge_a_response(data_file_name, save_path=""):
         users_csv = d.replace("data.csv", "includes_users.csv")
         users_columns = ['created_at', 'description', 'entities', 'id', 'location', 'name', 'pinned_tweet_id', 'profile_image_url', 'protected', 'public_metrics', 'url', 'username', 'verified']
         if os.path.exists(users_csv):
+            to_delete.append(users_csv)
             df_users = pd.read_csv(users_csv, engine='python').fillna("")
             df_users = df_users[df_users['id'] != '']
             df_users['id'] = df_users['id'].astype(str)
@@ -304,6 +310,7 @@ def merge_a_response(data_file_name, save_path=""):
         media_csv = d.replace("data.csv", "includes_media.csv")
         if os.path.exists(media_csv):
             df_media = pd.read_csv(media_csv, engine='python').fillna("")
+            to_delete.append(media_csv)
         else:
             df_media = pd.DataFrame(columns=['duration_ms', 'height', 'media_key', 'preview_image_url', 'public_metrics', 'type', 'url', 'width'])
         df_media['media_key'] = df_media['media_key'].astype(str)
@@ -321,6 +328,7 @@ def merge_a_response(data_file_name, save_path=""):
         poll_csv = d.replace("data.csv", "includes_polls.csv")
         if os.path.exists(poll_csv):
             df_poll = pd.read_csv(poll_csv, engine='python').fillna("")
+            to_delete.append(poll_csv)
         else:
             df_poll = pd.DataFrame(
                 columns=['duration_minutes', 'end_datetime', 'id', 'options', 'voting_status'])
@@ -352,6 +360,10 @@ def merge_a_response(data_file_name, save_path=""):
         base_name = os.path.basename(d).replace("_data.", '.')
         new_name = os.path.join(save_path, base_name)
         df_merged.to_csv(new_name, index=False)
+
+    if delete:
+        for f in to_delete:
+            os.remove(f)
 
     return df_merged
 
