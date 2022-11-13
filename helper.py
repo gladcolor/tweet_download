@@ -365,7 +365,9 @@ def merge_a_response(data_file_name, save_path="", delete=True):
         for f in to_delete:
             os.remove(f)
 
-    return df_merged
+    df_merged = df_merged.replace(',', ';').replace('\n', ';')
+
+    return df_merged.replace()
 
 def merge_results(saved_path, is_zipped=False):
     if is_zipped:
