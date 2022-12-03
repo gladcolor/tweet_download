@@ -227,16 +227,16 @@ def download_user_tweets():
 
 
 def download_country_tweet():
-    start_time = "2014-11-01T00:00:00Z"
-    end_time   = "2015-01-01T00:00:00Z"  ## 2019-04-11T09_27_34.000
+    start_time = "2022-01-01T00:00:00Z"
+    end_time   = "2022-10-11T00:50:12.000Z"  ## 2019-04-11T09_27_34.000
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-    saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}_test"
+    saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # saved_path = f"/content/drive/Shareddrives/T5/Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # Found 68767886 tweets for JP in 2021
 
     # DO NOT forget ()  !!!!
-    # query = f'-is:retweet lang:ja (自殺 OR 首吊り OR 首を吊る OR 首つり OR 死ぬ気 OR 自分を傷つける OR この世を去る OR 死ぬに値する OR 自分の人生を終わらせたいという願望 OR 死にたい OR 自傷 OR 私の命を奪う OR 死にたい OR 死にたいです OR 私の遺書 OR 私の人生を終わらせる OR 決して起きない OR 生きる価値がない OR 飛び降りる OR 永遠に眠る OR 電車に飛び込む OR 私がいないほうがいい OR 生きるのに疲れた OR 一人で死ぬ OR 永遠に眠る OR 私の悲しい人生 OR ストレスを感じる OR ストレスで参っている OR 感情の起伏が激しい OR 私自身が嫌い OR 精神的に弱い OR 練炭 OR 焼身 OR 服毒 OR もう死にたい OR 自殺サイト楽に死ねる方法 OR 生きることがつらい OR "死にたい 助けて" OR 安楽死方法 OR 一番楽に死ねる方法 OR 簡単に死ねる方法 OR 消えたい OR 確実に死ねる方法 OR 生きる意味が分からない OR "うつ 死にたい")'
-    query = f'-is:retweet lang:ja (自殺 -首吊り -首を吊る -首つり -死ぬ気 -自分を傷つける -この世を去る -死ぬに値する -自分の人生を終わらせたいという願望 -死にたい -自傷 -私の命を奪う -死にたい -死にたいです -私の遺書 -私の人生を終わらせる -決して起きない -生きる価値がない -飛び降りる -永遠に眠る -電車に飛び込む -私がいないほうがいい -生きるのに疲れた -一人で死ぬ -永遠に眠る -私の悲しい人生 -ストレスを感じる -ストレスで参っている -感情の起伏が激しい -私自身が嫌い -精神的に弱い -練炭 -焼身 -服毒 -もう死にたい -自殺サイト楽に死ねる方法 -生きることがつらい -"死にたい 助けて" -安楽死方法 -一番楽に死ねる方法 -簡単に死ねる方法 -消えたい -確実に死ねる方法 -生きる意味が分からない -"うつ 死にたい")'
+    query = f'-is:retweet lang:ja (自殺 OR 首吊り OR 首を吊る OR 首つり OR 死ぬ気 OR 自分を傷つける OR この世を去る OR 死ぬに値する OR 自分の人生を終わらせたいという願望 OR 死にたい OR 自傷 OR 私の命を奪う OR 死にたい OR 死にたいです OR 私の遺書 OR 私の人生を終わらせる OR 決して起きない OR 生きる価値がない OR 飛び降りる OR 永遠に眠る OR 電車に飛び込む OR 私がいないほうがいい OR 生きるのに疲れた OR 一人で死ぬ OR 永遠に眠る OR 私の悲しい人生 OR ストレスを感じる OR ストレスで参っている OR 感情の起伏が激しい OR 私自身が嫌い OR 精神的に弱い OR 練炭 OR 焼身 OR 服毒 OR もう死にたい OR 自殺サイト楽に死ねる方法 OR 生きることがつらい OR "死にたい 助けて" OR 安楽死方法 OR 一番楽に死ねる方法 OR 簡単に死ねる方法 OR 消えたい OR 確実に死ねる方法 OR 生きる意味が分からない OR "うつ 死にたい")'
+    # query = f'-is:retweet lang:ja (自殺 -首吊り -首を吊る -首つり -死ぬ気 -自分を傷つける -この世を去る -死ぬに値する -自分の人生を終わらせたいという願望 -死にたい -自傷 -私の命を奪う -死にたい -死にたいです -私の遺書 -私の人生を終わらせる -決して起きない -生きる価値がない -飛び降りる -永遠に眠る -電車に飛び込む -私がいないほうがいい -生きるのに疲れた -一人で死ぬ -永遠に眠る -私の悲しい人生 -ストレスを感じる -ストレスで参っている -感情の起伏が激しい -私自身が嫌い -精神的に弱い -練炭 -焼身 -服毒 -もう死にたい -自殺サイト楽に死ねる方法 -生きることがつらい -"死にたい 助けて" -安楽死方法 -一番楽に死ねる方法 -簡単に死ねる方法 -消えたい -確実に死ねる方法 -生きる意味が分からない -"うつ 死にたい")'
 
     # start_time = "2022-01-01T00:00:00Z"
     # end_time =   "2022-03-08T00:00:00Z"
@@ -374,6 +374,7 @@ def execute_download(query,
     t0 = time.perf_counter()
 
     # 1) request response
+    to_delete_mp = mp.Manager().list()
     while next_token != "":
         try:
             #
@@ -408,11 +409,12 @@ def execute_download(query,
 
             tweet_count_total += max_results
 
+
             if len(data_filename_list_mp) > 5 or next_token == "":
                 # 2) use a sub-process to merge the five parts of tweets data (1.4 seconds per response, paralleling with the main process);
                 # merge the five parts of a response in data_filename_list_mp, then put the result into merged_df_list_mp
                 # the merge file is stored in folder: line_tweet_dir
-                to_delete_mp = mp.Manager().list()
+
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, to_delete_mp))
                 merge_process.start()
