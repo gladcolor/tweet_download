@@ -81,8 +81,8 @@ def save_search(json_response,
 
 
 def get_tweet_count(query='place_country:UA',
-                    start_time="2021-02-24T00:00:00Z",
-                    end_time  ="2022-04-08T00:00:00Z",
+                    start_time="2022-02-24T00:00:00Z",
+                    end_time  ="2022-03-08T00:00:00Z",
                     granularity='day',
                     next_token=None,
                     until_id=None):
@@ -516,11 +516,47 @@ bearer_token = tokens[2]
 access_token = tokens[3]
 access_token_secret = tokens[4]
 
+def count_interval_tweets(start_time, end_time, query, save_file, frequency="month"):
+    start_time = pd.to_datetime(start_time)
+    end_time = pd.to_datetime(end_time)
+    time_range = pd.date_range(start_time, end_time, freq='M')
+    # time_range_str = []
+    # for d in time_range:
+    #     d = d - pd.offsets.MonthBegin(1, normalize=True) if not d.is_month_start else d
+    #     time_range_str.append(d)
+    time_range_str = [str(t)[:10] for t in time_range]
+
+    print("time_range:", time_range_str)
+
+    tweet_cnt_list = []
+    for i in range(len(time_range_str) ):
+        start = time_range_str[i][:7] + '-01T00:00:00Z'
+        end = time_range_str[i] + 'T23:59:59.99999Z'
+        tweet_cnt = get_tweet_count(query=query, start_time=start, end_time=end)
+        tweet_cnt_list.append(tweet_cnt)
+        print("Found tweets:", tweet_cnt, start, end)
+    df = pd.DataFrame()
+    df['month'] = [d[:7] for d in time_range_str[:]]
+    df['をtweet_count_in_JP'] = tweet_cnt_list
+    df.to_csv(save_file, index=False)
+    return df
 
 if __name__ == '__main__':
     # execute_download()
-    download_country_tweet()
+    # download_country_tweet()
     # download_user_tweets()
+
+    # print("Found tweets:", get_tweet_count())
+
+    df = count_interval_tweets(start_time="2012-01-01",
+                          end_time="2022-11-30",
+                          query="-is:retweet lang:ja (ノ OR の)",  # meaning: and,的  # (ノ OR の) これ
+                          # query="-is:retweet place_country:JP",
+                          save_file=r'P:\Shared drives\T5\Japan_Tweets_2021_01_01_2022_01_01\Japan_tweets\monthly_ノの_tweet_counts.csv',
+                          frequency="month"
+                          )
+
+    print(df)
 
     # data_filename_list = list(range(10))
     # print(get_tweet_count())
