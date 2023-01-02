@@ -129,7 +129,6 @@ def get_tweet_count(query='place_country:UA',
 
 def merge_a_response_list(data_filename_list, merged_df_list, save_path, to_delete):
     logger.info("PID %s merge_a_response_list() start!" % os.getpid())
-
     #
     # print("len(data_filename_list): ", len(data_filename_list))
     # print("len(data_filename_list): ", len(data_filename_list))
@@ -227,16 +226,17 @@ def download_user_tweets():
 
 
 def download_country_tweet():
-    start_time = "2022-01-01T00:00:00Z"
-    end_time   = "2022-10-11T00:50:12.000Z"  ## 2019-04-11T09_27_34.000
+    start_time = "2014-01-01T00:00:00Z"
+    end_time   = "2015-01-01T00:00:00Z"  ## 2019-04-11T09_27_34.000
     # saved_path = r"K:\Research\Ukraine_tweets\User_2021_tweets_Ukraine_20220312_20220314"
-    saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
+    saved_path = f"H:\Research\Japan_tweets\Japan_Tweets_{start_time[:10]}_{end_time[:10]}_自殺only"
     # saved_path = f"/content/drive/Shareddrives/T5/Japan_Tweets_{start_time[:10]}_{end_time[:10]}"
     # Found 68767886 tweets for JP in 2021
 
     # DO NOT forget ()  !!!!
-    query = f'-is:retweet lang:ja (自殺 OR 首吊り OR 首を吊る OR 首つり OR 死ぬ気 OR 自分を傷つける OR この世を去る OR 死ぬに値する OR 自分の人生を終わらせたいという願望 OR 死にたい OR 自傷 OR 私の命を奪う OR 死にたい OR 死にたいです OR 私の遺書 OR 私の人生を終わらせる OR 決して起きない OR 生きる価値がない OR 飛び降りる OR 永遠に眠る OR 電車に飛び込む OR 私がいないほうがいい OR 生きるのに疲れた OR 一人で死ぬ OR 永遠に眠る OR 私の悲しい人生 OR ストレスを感じる OR ストレスで参っている OR 感情の起伏が激しい OR 私自身が嫌い OR 精神的に弱い OR 練炭 OR 焼身 OR 服毒 OR もう死にたい OR 自殺サイト楽に死ねる方法 OR 生きることがつらい OR "死にたい 助けて" OR 安楽死方法 OR 一番楽に死ねる方法 OR 簡単に死ねる方法 OR 消えたい OR 確実に死ねる方法 OR 生きる意味が分からない OR "うつ 死にたい")'
-    # query = f'-is:retweet lang:ja (自殺 -首吊り -首を吊る -首つり -死ぬ気 -自分を傷つける -この世を去る -死ぬに値する -自分の人生を終わらせたいという願望 -死にたい -自傷 -私の命を奪う -死にたい -死にたいです -私の遺書 -私の人生を終わらせる -決して起きない -生きる価値がない -飛び降りる -永遠に眠る -電車に飛び込む -私がいないほうがいい -生きるのに疲れた -一人で死ぬ -永遠に眠る -私の悲しい人生 -ストレスを感じる -ストレスで参っている -感情の起伏が激しい -私自身が嫌い -精神的に弱い -練炭 -焼身 -服毒 -もう死にたい -自殺サイト楽に死ねる方法 -生きることがつらい -"死にたい 助けて" -安楽死方法 -一番楽に死ねる方法 -簡単に死ねる方法 -消えたい -確実に死ねる方法 -生きる意味が分からない -"うつ 死にたい")'
+    # query = f'-is:retweet lang:ja 自殺'
+    # query = f'-is:retweet lang:ja (自殺 OR 首吊り OR 首を吊る OR 首つり OR 死ぬ気 OR 自分を傷つける OR この世を去る OR 死ぬに値する OR 自分の人生を終わらせたいという願望 OR 死にたい OR 自傷 OR 私の命を奪う OR 死にたい OR 死にたいです OR 私の遺書 OR 私の人生を終わらせる OR 決して起きない OR 生きる価値がない OR 飛び降りる OR 永遠に眠る OR 電車に飛び込む OR 私がいないほうがいい OR 生きるのに疲れた OR 一人で死ぬ OR 永遠に眠る OR 私の悲しい人生 OR ストレスを感じる OR ストレスで参っている OR 感情の起伏が激しい OR 私自身が嫌い OR 精神的に弱い OR 練炭 OR 焼身 OR 服毒 OR もう死にたい OR 自殺サイト楽に死ねる方法 OR 生きることがつらい OR "死にたい 助けて" OR 安楽死方法 OR 一番楽に死ねる方法 OR 簡単に死ねる方法 OR 消えたい OR 確実に死ねる方法 OR 生きる意味が分からない OR "うつ 死にたい")'
+    query = f'-is:retweet lang:ja (自殺 -首吊り -首を吊る -首つり -死ぬ気 -自分を傷つける -この世を去る -死ぬに値する -自分の人生を終わらせたいという願望 -死にたい -自傷 -私の命を奪う -死にたい -死にたいです -私の遺書 -私の人生を終わらせる -決して起きない -生きる価値がない -飛び降りる -永遠に眠る -電車に飛び込む -私がいないほうがいい -生きるのに疲れた -一人で死ぬ -永遠に眠る -私の悲しい人生 -ストレスを感じる -ストレスで参っている -感情の起伏が激しい -私自身が嫌い -精神的に弱い -練炭 -焼身 -服毒 -もう死にたい -自殺サイト楽に死ねる方法 -生きることがつらい -"死にたい 助けて" -安楽死方法 -一番楽に死ねる方法 -簡単に死ねる方法 -消えたい -確実に死ねる方法 -生きる意味が分からない -"うつ 死にたい")'
 
     # start_time = "2022-01-01T00:00:00Z"
     # end_time =   "2022-03-08T00:00:00Z"
@@ -375,7 +375,7 @@ def execute_download(query,
 
     # 1) request response
     to_delete_mp = mp.Manager().list()
-    while next_token != "":
+    while (next_token != ""):
         try:
             #
             json_response = helper.connect_to_endpoint(search_url, headers, query_params)
@@ -388,12 +388,8 @@ def execute_download(query,
             next_token = json_response['meta'].get('next_token', "")
             query_params.update({"next_token": next_token})
 
-
-
-
             # save the raw data of each page (0.3 seconds per response)
             data_filename = save_search(json_response, saved_path)
-
 
             # t2 = time.perf_counter()
             data_filename_list_mp.append(data_filename)  # put the name of the saved file to a list for further merging.
@@ -401,7 +397,6 @@ def execute_download(query,
 
             # df_merged = helper.merge_a_response(data_filename, save_path=line_tweet_dir)
             # df_merged = merge_a_response_list(data_filename_list_mp, merged_df_list=merged_df_list_mp, save_path=line_tweet_dir)
-
             # merged_df_list_mp.append(df_merged)
 
             total += int(json_response['meta']['result_count'])
@@ -418,6 +413,7 @@ def execute_download(query,
                 merge_process = mp.Process(target=merge_a_response_list,
                                            args=(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, to_delete_mp))
                 merge_process.start()
+                merge_process.join()
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600  # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed)
 
@@ -454,7 +450,10 @@ def execute_download(query,
                 # merge_process.wait()
                 # wait(merged_df_list_mp)
 
+
                 df_all = df_all[df_all['created_at'].str.len() > 10]  # remove tweet without post time
+
+                # create a new name
                 lastest_time = df_all['created_at'].max().replace(":", "_")
                 oldest_time  = df_all['created_at'].min().replace(":", "_")
                 base_name = f"{oldest_time}_{lastest_time}_{len(df_all)}"  # use tweet time as basename
@@ -485,9 +484,29 @@ def execute_download(query,
                 speed = tweet_count_total / (time.perf_counter() - t0) * 3600 # per hour
                 logger.info("Speed: %.0f tweet/hour" % speed )
 
-            if next_token == "":
-                print("No next page! Exit.")
-                return
+            if next_token == "" and len(merged_df_list_mp) > 0:  # merge and convert the remaining tweets.
+                try:
+                    merge_a_response_list(data_filename_list_mp, merged_df_list_mp, line_tweet_dir, to_delete_mp)
+                    df_all = pd.concat(merged_df_list_mp)
+
+                    # create a new file name
+                    lastest_time = df_all['created_at'].max().replace(":", "_")
+                    oldest_time = df_all['created_at'].min().replace(":", "_")
+                    base_name = f"{oldest_time}_{lastest_time}_{len(df_all)}"  # use tweet time as basename
+                    new_name = os.path.join(chunks_dir, base_name + f"{suffix}")
+                    df_all.to_csv(new_name, index=False)
+
+                    new_name = os.path.join(cluster_csvs_dir, base_name + f"{suffix}")
+                    convert_process = mp.Process(target=convert_to_cluster_process,
+                                                 args=(df_all, new_name))
+                    convert_process.start()
+                    convert_process.join()
+
+                    print("No next page! Exit.")
+                    return
+                except Exception as e:
+                    print("Error when processing token='': ", e)
+                # return
 
         except Exception as e:
             print(json_response)
