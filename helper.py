@@ -796,7 +796,7 @@ def convert_to_cluster(df):
         print(df)
         new_df['username'] = ""
     new_df['postdate'] = df['created_at']
-    new_df['message'] = df['text'].replace('\n', ';')
+    new_df['message'] = df['text'].replace('\n', ';')   # seems there is no need to process the extended tweets > 140 charaters.
     new_df['geoType'] = df.apply(get_geoType, axis=1)
     new_df['longitude'] = df.apply(get_longitude, axis=1)
     new_df['latitude'] = df.apply(get_latitude, axis=1)
