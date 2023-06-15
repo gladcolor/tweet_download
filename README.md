@@ -37,12 +37,28 @@ There are four folders to store downloaded tweets:
  
      Edit the parameters in the fucntion of `execute_download`, such as `saved_path`, `query`, `start_time`, `end_time`, and `chunk_size`. 
  
-     To build a query, you need to read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md). Here is a example: 
+     To build a query, you need to **carefully** read [Building a query](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query) or [How to write search queries](https://github.com/twitterdev/getting-started-with-the-twitter-api-v2-for-academic-research/blob/main/modules/5-how-to-write-search-queries.md), and understand the meaning of space ` ` (=AND), `OR`, `""`, and `()`. Again, carefully check the downloaded tweet to verify your queries. Here is some examples: 
  `vaccin OR vaccination OR vaccine OR vaccinate place_country:AU`. It means to collect tweets posted in Australia contain words `vaccin`, `vaccination`, or `vaccinate`.
  
- `has:geo`, ` from:cnn OR from:FoxNews`. Note "OR" is capitalized.
+ `has:geo`, ` from:cnn OR from:FoxNews`, `(wildfire OR earthquake)`. Note "OR" is capitalized.
  
 * Please pay attention to the tweet count returned at the begining. If it is not your expectation, just stop the program then refine the query.
+
+
+A use example in the `download_tweet_APIv2.py`:
+```python
+if __name__ == '__main__':
+
+    query = '(Canada wildfire) OR (wildfire smoke) OR (canada smoke) OR (canada air)'
+    saved_path = 'H:\Research\Canada_widefire'
+    start_time = "2023-05-01T01:00:00Z"
+    end_time = "2023-06-13T01:00:00Z"
+    execute_download(query=query,
+                     saved_path=saved_path,
+                     start_time=start_time,
+                     end_time=end_time,
+                     )
+```
  
   
  # Rate limit
