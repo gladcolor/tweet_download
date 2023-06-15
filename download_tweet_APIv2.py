@@ -566,19 +566,28 @@ def count_interval_tweets(start_time, end_time, query, save_file, frequency="mon
     return df
 
 if __name__ == '__main__':
-    # execute_download()
-    download_country_tweet()
+
+    query = '(Canada wildfire) OR (wildfire smoke) OR (canada smoke) OR (canada air)'
+    saved_path = 'H:\Research\Canada_widefire'
+    start_time = "2023-05-01T01:00:00Z"
+    end_time = "2023-06-13T01:00:00Z"
+    execute_download(query=query,
+                     saved_path=saved_path,
+                     start_time=start_time,
+                     end_time=end_time,
+                     )
+    # download_country_tweet()
     # download_user_tweets()
 
     # print("Found tweets:", get_tweet_count())
 
     # df = count_interval_tweets(start_time="2012-01-01",
     #                       end_time="2022-12-31",
-    #                       # query="-is:retweet lang:ja (ノ OR の)",  # meaning: and,的  # (ノ OR の) これ
-    #                       # query="lang:ja (ノ OR の)",  # meaning: and,的  # (ノ OR の) これ
-    #                       query="place_country:JP",  # -is:retweet
-    #                       # save_file=r'P:\Shared drives\T5\Japan_Tweets_2021_01_01_2022_01_01\Japan_tweets\monthly_ノの_tweet_counts_have_retweets_202212.csv',
-    #                       save_file=r'P:\Shared drives\T5\Japan_Tweets_2021_01_01_2022_01_01\Japan_tweets\monthly_geotweet_count_v2.csv',
+    #                       # query="-is:retweet lang:ja (ノ OR の OR ニ OR に OR テ OR て OR ハ OR は OR ダ OR だ)",  # meaning: and,的  # (ノ OR の) これ
+    #                       query="lang:ja (ノ OR の OR ニ OR に OR テ OR て OR ハ OR は OR ダ OR だ)",  # meaning: and,的  # (ノ OR の) これ
+    #                       # query="place_country:JP",  # -is:retweet
+    #                       save_file=r'P:\Shared drives\T5\Japan_Tweets_2021_01_01_2022_01_01\Japan_tweets\monthly_top5_Japanese_word_tweet_counts_have_retweets_2012-2022.csv',
+    #                       # save_file=r'P:\Shared drives\T5\Japan_Tweets_2021_01_01_2022_01_01\Japan_tweets\monthly_geotweet_count_v3.csv',
     #                       frequency="month"
     #                       )
     # print(df)
